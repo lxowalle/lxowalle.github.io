@@ -1,0 +1,18 @@
+# custom
+.DS_Store
+node_modules/
+.vscode
+
+# lock
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+dist/
+
+# logs
+*.log
+
+# vuepress
+.cache
+.temp
