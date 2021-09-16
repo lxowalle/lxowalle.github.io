@@ -1,7 +1,7 @@
 ---
 title: lvgl gui工具使用
 date: 2021-09-10 11:00:51
-categories: "none class"
+categories: "未分类"
 tags:
 ---
 # LVGL GUI Guider工具使用
