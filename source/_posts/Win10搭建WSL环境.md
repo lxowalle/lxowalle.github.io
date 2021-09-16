@@ -1,6 +1,7 @@
 ---
 title: Win10搭建WSL环境
 date: 2021-09-14 13:08:48
+categories: "未分类"
 tags:
 ---
 

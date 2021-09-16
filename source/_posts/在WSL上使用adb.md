@@ -1,7 +1,7 @@
 ---
 title: 在WSL上使用adb
 date: 2021-09-14 20:40:42
-categories: "none class"
+categories: "未分类"
 tags:
 ---
 
