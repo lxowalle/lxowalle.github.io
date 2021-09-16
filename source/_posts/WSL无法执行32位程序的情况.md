@@ -1,7 +1,7 @@
 ---
 title: WSL无法执行32位程序的情况
 date: 2021-09-10 13:10:47
-categories: "none class"
+categories: "未分类"
 tags:
 ---
 # WSL无法执行32位程序的情况
