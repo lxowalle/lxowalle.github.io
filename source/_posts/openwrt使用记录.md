@@ -1,7 +1,7 @@
 ---
 title: openwrt使用记录
 date: 2021-09-10 14:32:23
-categories: "none class"
+categories: "未分类"
 tags:
 ---
 
