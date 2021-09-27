@@ -188,4 +188,33 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
     - 执行命令`pjsua --config-file pjsua-cfg pjsua.cfg`
 4. 手机端拨号100，播出后应当能在pjsua端听到呼叫提示音
 5. pjusa输入a并回车，再次输入200并回车，此时通话建立
-6. 开始通话
+6. 正常通话
+
+## 交叉编译
+
+命令：
+```
+# 依赖
+sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev
+
+cd pjproject
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin 
+./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --libdir=/home/sipeed/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833 LIBS=-ldl --disable-libwebrtc
+make dep
+make -j8
+```
+
+出现错误1：找不到-lasound
+> ```
+> 错误：arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
+> ```
+解决1：将libasound.so复制到pjproject/pjlib/lib目录下
+
+出现错误2：函数未定义
+> ```
+> output/pjlib-test-arm-openwrt-linux-gnu-muslgnueabi/main.o: In function > > `print_stack':
+> main.c:(.text+0x14): undefined reference to `backtrace'
+> main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
+> ```
+解决2：注销掉backtrace和backtrace_symbols_fd的相关调用
+
