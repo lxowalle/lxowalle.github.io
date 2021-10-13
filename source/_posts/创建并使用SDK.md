@@ -206,7 +206,6 @@ config COMPONENT_TEST_ENABLE      # 变量名，Cmake使用   CONFIG_COMPONENT_T
     help
         这里填写config的详细说明
     depends on COMPONENT_TEST_MENUCONFIG    # 只是config依赖于变量COMPONENT_TEST_MENUCONFIG
-endconfig
 ```
 
 menu字段：创建一个目录

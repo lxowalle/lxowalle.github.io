@@ -218,3 +218,29 @@ make -j8
 > ```
 解决2：注销掉backtrace和backtrace_symbols_fd的相关调用
 
+## config_site.h参考
+
+默认路径：`pjlib/include/pj/config_site.h`
+
+内容：
+```
+#define PJMEDIA_AUDIO_DEV_HAS_ALSA      1
+#undef PJMEDIA_AUDIO_DEV_HAS_PORTAUDIO
+#define PJMEDIA_AUDIO_DEV_HAS_PORTAUDIO     0
+#include <pj/config_site_sample.h>
+
+#define PJMEDIA_RESAMPLE_NONE   1
+#define PJMEDIA_HAS_SPEEX_AEC   0
+#define PJMEDIA_HAS_VIDEO   0
+#define PJMEDIA_CONF_USE_SWITCH_BOARD 1
+```
+## 移植
+
+编译为动态库:
+```
+make distclean
+./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --libdir=/home/sipeed/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833 LIBS=-ldl --disable-libwebrtc --enable-shared=yes
+
+## 如果提示未加"-fPIC",可以添加该参数
+./configure CFLAGS="-fPIC" CXXFLAGS="-fPIC"
+```
