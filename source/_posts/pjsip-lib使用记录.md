@@ -119,6 +119,26 @@ pjsua_call_make_call(current_acc,   // 当前账户
                     NULL);          // 接收呼叫标识的指针
 ```
 
+接电话配置
+```c
+/** 获取默认电话配置 */
+pjsua_call_setting_default(&opt);
+
+/** 应答来电 */
+pjsua_call_answer(call_id,                     // 来电标识
+                    app_config.auto_answer,     // 状态代码(100-699)
+                    NULL,                       // 原因
+                    NULL);                      // 要传出的标头信息
+
+/** 应答来电 */
+pjsua_call_answer2(call_id,                     // 来电标识
+                    &opt,                       // 呼叫配置
+                    app_config.auto_answer,     // 状态代码(100-699)
+                    NULL,                       // 原因
+			        NULL);                      // 要传出的标头信息
+```
+
+
 清除TLS缓存区的证书和密钥
 
 ```c
