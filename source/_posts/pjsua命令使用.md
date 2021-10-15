@@ -190,6 +190,23 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 5. pjusa输入a并回车，再次输入200并回车，此时通话建立
 6. 正常通话
 
+
+步骤2:(视频通话)
+1. 执行命令`pjsua --config-file pjsua-cfg pjsua.cfg`注册本机（参考步骤1）
+2. 在弹出的命令行输入：
+
+    ```
+    vid enable   # 打开设备
+    vid acc autotx on   # 开始传输
+    vid acc autorx on   # 停止传输
+    ```
+3. 拨号或接通电话
+4. 在命令行输入：
+
+    ```
+    vid call tx on 1    # 打开视频传输 vid call tx on 0 # 关闭视频传输
+    ```
+5. (可选)在命令行输入：`vid dev prev on -1` # 打开采集的设备的预览窗口
 ## 交叉编译
 
 命令：
@@ -199,7 +216,7 @@ sudo apt-get install build-essential git-core checkinstall yasm texi2html libvor
 
 cd pjproject
 PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin 
-./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --libdir=/home/sipeed/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833 LIBS=-ldl --disable-libwebrtc
+./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --disable-libwebrtc
 make dep
 make -j8
 ```
@@ -239,8 +256,9 @@ make -j8
 编译为动态库:
 ```
 make distclean
-./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --libdir=/home/sipeed/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833 LIBS=-ldl --disable-libwebrtc --enable-shared=yes
-
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin 
+./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --disable-libwebrtc --enable-shared=yes
+make dep && make -j8
 ## 如果提示未加"-fPIC",可以添加该参数
 ./configure CFLAGS="-fPIC" CXXFLAGS="-fPIC"
 ```
