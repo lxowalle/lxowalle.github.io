@@ -5,7 +5,7 @@ tags:
 ---
 
 
-# pjsip lib使用记录
+# pjsip库使用记录
 
 [pjsua-lib API说明](https://www.pjsip.org/docs/latest/pjsip/docs/html/group__PJSUA__LIB.htm)
 [pjlib_util API说明](https://www.pjsip.org/docs/latest/pjlib-util/docs/html/group__PJLIB__UTIL__CLI.htm)

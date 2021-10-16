@@ -1,5 +1,5 @@
 ---
-title: pjsua命令使用
+title: pjsua使用
 date: 2021-09-26 10:48:11
 categories: "未分类"
 tags:
@@ -170,7 +170,7 @@ TLS选项：
 
 miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-portsip-softphone/)软件作为手机端SIP客户端，Deepin编译出pjsua程序作为电脑端SIP客户端
 
-步骤：
+语音通话：
 1. miniSIPServer设置ip地址(192.168.0.15)，从机地址(100,101)
 2. 手机端通过输入101，101，192.168.0.15向服务器注册
 3. pjsua端通过命令行向服务器注册
@@ -191,7 +191,17 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 6. 正常通话
 
 
-步骤2:(视频通话)
+视频通话
+注意：
+> 使用cheese工具可以验证摄像头是否可用
+> 启动视频通话需要有以下支持
+> - 格式转换和视频需要：SDL(Version 2.0)
+> - H263编解码需要：libyuv 或 ffmpeg
+> - H264编解码需要：OpenH264或libx264或ffmpeg
+> - VP8或VP9编解码需要：libvpx
+> - Linux环境还需要支持：Video4Linux2(v4l2)
+[视频通话说明文档](https://trac.pjsip.org/repos/wiki/Video_Users_Guide)
+
 1. 执行命令`pjsua --config-file pjsua-cfg pjsua.cfg`注册本机（参考步骤1）
 2. 在弹出的命令行输入：
 
@@ -212,13 +222,13 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 命令：
 ```
 # 依赖
-sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev
+sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev ffmpeg
 
 cd pjproject
 PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin 
-./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --disable-libwebrtc
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install_out --disable-libwebrtc
 make dep
-make -j8
+make -j8 && make install
 ```
 
 出现错误1：找不到-lasound
@@ -239,6 +249,8 @@ make -j8
 
 默认路径：`pjlib/include/pj/config_site.h`
 
+在pjsip官网搜索关键词"Compile time configurations"可以获取更多的宏说明
+
 内容：
 ```
 #define PJMEDIA_AUDIO_DEV_HAS_ALSA      1
@@ -255,10 +267,17 @@ make -j8
 
 编译为动态库:
 ```
+
+cd pjproject
 make distclean
 PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin 
-./configure CC=arm-openwrt-linux-muslgnueabi-gcc --host=arm-openwrt-linux-muslgnueabi --disable-libwebrtc --enable-shared=yes
-make dep && make -j8
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install_out --disable-libwebrtc --enable-shared=yes --enable-static=no
+make dep
+make -j8 && make install
+
 ## 如果提示未加"-fPIC",可以添加该参数
 ./configure CFLAGS="-fPIC" CXXFLAGS="-fPIC"
+
+## 如果出现编译平台的错误，在config.h下定义宏PJ_AUTOCONF
+#define PJ_AUTOCONF
 ```
