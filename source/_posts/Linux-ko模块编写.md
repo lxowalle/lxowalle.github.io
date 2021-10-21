@@ -182,8 +182,6 @@ MODULE_VERSION("0.1");
 /* 模块宏 */
 ```
 
-
-
 #### 2.1.1 源文件的数据结构
 
 用户根据功能定义的结构体暂不关注。
@@ -240,8 +238,8 @@ ps:
 > ```c
 > void init(void)
 > {
->     init_a();
->     init_b();
+>  init_a();
+>  init_b();
 > }
 > ```
 >
@@ -260,9 +258,9 @@ ps:
 > */
 > #define __initlist(fn, lvl) 				\
 > static initlist_t  __init_##fn __init = { 	\
->   magic:    INIT_MAGIC, 					\
->   callback: fn, 							\
->   level:   lvl }
+> magic:    INIT_MAGIC, 					\
+> callback: fn, 							\
+> level:   lvl }
 > ```
 >
 > ​	通过上面的宏，调用__initlist(fn, lvl)就可以将需要执行初始化的函数添加到".initlist"段，初始化程序只需要在这个段里查找初始化函数并执行即可，不需要反复修改init()函数。
@@ -273,48 +271,48 @@ ps:
 > #define module_init(x)     		__initcall(x);         	//include/linux/init.h 
 > #define __initcall(fn) 			device_initcall(fn)  
 > #define device_initcall(fn)     __define_initcall("6",fn,6) // 普通驱动优先级为6
->   
+> 
 > /**
 > 功能：将需要执行的模块初始化函数指针放到".initcall" level ".init"(这里的level决定了初始化等级，数值越低优先级越高)
 > */
 > #define __define_initcall(level,fn,id) \  
->          static initcall_t __initcall_##fn##id __used \
->          __attribute__((__section__(".initcall" level ".init"))) = fn  
+>       static initcall_t __initcall_##fn##id __used \
+>       __attribute__((__section__(".initcall" level ".init"))) = fn  
 > ```
 >
 > ​	通过调用module_init(x)宏可以将模块初始化指针加入到".initcall"区段，并统一初始化。还有其他类型的模块初始化，数值越低优先级越高
 >
 > ```c
 > #define pure_initcall(fn)           __define_initcall("0",fn,0)  
->   
+> 
 > #define core_initcall(fn)            __define_initcall("1",fn,1)  
->   
+> 
 > #define core_initcall_sync(fn)          __define_initcall("1s",fn,1s)  
->   
+> 
 > #define postcore_initcall(fn)             __define_initcall("2",fn,2)  
->   
+> 
 > #define postcore_initcall_sync(fn)  __define_initcall("2s",fn,2s)  
->   
+> 
 > #define arch_initcall(fn)            __define_initcall("3",fn,3)  
->   
+> 
 > #define arch_initcall_sync(fn)          __define_initcall("3s",fn,3s)  
->   
+> 
 > #define subsys_initcall(fn)                 __define_initcall("4",fn,4)  
->   
+> 
 > #define subsys_initcall_sync(fn)      __define_initcall("4s",fn,4s)  
->   
+> 
 > #define fs_initcall(fn)                          __define_initcall("5",fn,5)  
->   
+> 
 > #define fs_initcall_sync(fn)               __define_initcall("5s",fn,5s)  
->   
+> 
 > #define rootfs_initcall(fn)                  __define_initcall("rootfs",fn,rootfs)  
->   
+> 
 > #define device_initcall(fn)                 __define_initcall("6",fn,6)  
->   
+> 
 > #define device_initcall_sync(fn)       __define_initcall("6s",fn,6s)  
->   
+> 
 > #define late_initcall(fn)             __define_initcall("7",fn,7)  
->   
+> 
 > #define late_initcall_sync(fn)           __define_initcall("7s",fn,7s)
 > ```
 
@@ -487,9 +485,102 @@ long ioctl_d_interface_ioctl(struct file *filp, unsigned int cmd, unsigned long 
 }
 ```
 
-​	未完待续...
+### 2.2 头文件结构
+
+从这个项目来看头文件对于模块的编写没有特殊作用，暂时略过
+
+### 2.3 Makefile文件结构
+
+先来整理一下Makefile文件的内容：
+
+```makefile
+MODULE = ioctl
+
+## 检查KERNELRELEASE变量是否为空 ##
+ifneq ($(KERNELRELEASE),)		# 判断KERNELRELEASE变量是否为空
+
+## 添加内核模块编译对象和编译选项 ##
+obj-m  		:= $(MODULE).o			# 告诉$(MODULE).o的模块对象(如果时内核模块，则使用obj-y)，内核Makefile会将该对象编译为.ko
+$(MODULE)-y := ioctl_interface.o	# 加入当前模块依赖的其他对象文件
+ccflags-y 	:= -std=gnu89 -g -Wall -Wno-unused-function -Wno-declaration-after-statement	# 配置编译选项
+
+else
+
+## 设置内核Makefile的路径 ##
+ifeq ($(KDIR),)
+
+DEFAULT_KDIR := /lib/modules/$(shell uname -r)/build
+ERR_TEXT=export KDIR=<linux_src_dir> is empty. Using /lib/modules/$(shell uname -r)/build
+$(warning $(ERR_TEXT))
+KDIR := $(DEFAULT_KDIR)
+
+endif 
+
+## 执行内核Makefile ##
+all:
+	$(MAKE) clean
+	$(MAKE) -C $(KDIR) M=$$PWD	// -C表示跳转到$(KDIR)目录读取Makefile；M=表示跳转后返回到$$PWD目录，继续执行当前Makefile
+
+clean:
+	rm -f *.o *~ core .depend .*.cmd *.ko *.mod.c modules.order Module.symvers
+	rm -rf .tmp_versions
+
+endif
+```
+
+这里Makefile文件的执行次序是先检查KERNELRELEASE变量是否为空（检查这个是为了判断是否加载了内核的Makefile），如果KERNELRELEASE变量为空则开始设置KDIR变量的路径（这个路径保存了内核Makefile的路径，后面会用到）。设置好KDIR变量后，开始通过$(MAKE) -C跳转到内核Makefile路径，并读取内核Makefile文件，然后通过M=设置读取完后返回的路径。并执行内核的Makefile。
+
+这里Makefile的命令执行顺序还有些不懂，还需要多看些资料来了解。
+
+​	kbuild的对象配置包括有：obj-y,obj-m,module_name-y,lib-y。此外还有extra-y,alway-y；编译标志有：ccflags-y,asflags-y,ldflags-y等等，这里扩展开后细节很多，需要了解的时候参考[官方说明](https://www.kernel.org/doc/html/latest/kbuild/makefiles.html)
+
+ ps:
+
+>ifeq(a,b)	判断a是否等于b
+>
+>KERNELRELEASE变量在内核Makefile中被定义，如果该变量值为空，则表示没有引用内核Makefile
+>
+>= 是最基本的赋值
+>:= 是覆盖之前的值
+>?= 是如果没有被赋值过就赋予等号后面的值
+>+= 是添加等号后面的值
+
+
+
+## 三、加载模块
+
+工程的load_driver.sh文件时加载模块的脚本,我删减了一些不重要的信息：
+
+```shell
+#!/bin/bash
+
+device_name=ioctl
+
+## 加载模块
+/sbin/insmod "./dev/$device_name.ko" || exit 1
+
+## 获取模块的主设备号
+major=$(cat /proc/devices | grep "$device_name")
+major_number=($major)
+
+## 删除旧设备文件
+rm -f /dev/${device_name}
+
+## 申请新设备文件（注意c表示字符设备，最后两个参数分别是主设备号和次设备号）
+mknod /dev/${device_name} c ${major_number[0]} 0
+```
+
+ 按脚本的内容来加载模块，注意mknod命令中c表示申请"字符设备"，b表示新建"块设备"
+
+ps：
+
+>系统通过一个32无符号数据为设备分配了设备号，其中高12位代表主设备号，低20位代表次设备号。
+
+参考资料：
 
 [Linux中的File_operations结构体](https://www.cnblogs.com/ZJoy/archive/2011/01/09/1931379.html)
 
 [linux驱动的入口函数module_init的加载和释放](http://www.embeddedlinux.org.cn/emb-linux/kernel-driver/201710/25-7671.html#)
+
+[The Linux kernel user’s and administrator’s guide](https://www.kernel.org/doc/html/latest/admin-guide/index.html)
 
