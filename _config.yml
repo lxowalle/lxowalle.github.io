@@ -99,6 +99,7 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: butterfly
 
+# github提交进度
 githubcalendar:
   enable: true
   enable_page: /  # 表示只在根目录(首页)显示
@@ -111,6 +112,12 @@ githubcalendar:
   api: https://python-github-calendar-api.vercel.app/api
   # api: https://python-gitee-calendar-api.vercel.app/api
   calendar_js: https://cdn.jsdelivr.net/gh/Zfour/hexo-github-calendar@1.16/hexo_githubcalendar.js
+
+# 搜索
+search:
+  path: search.xml
+  field: post
+  content: true
 
 
 # Deployment
