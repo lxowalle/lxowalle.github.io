@@ -95,6 +95,11 @@ sudo npm install hexo-cli -g
 
 sudo npm install
 sudo npm install hexo-deployer-git --save
+
+# 更新插件
+npm install hexo-githubcalendar --save
+npm install hexo-generator-search --save
+
 hexo g && hexo d
 ```
 
@@ -177,10 +182,11 @@ github pages的配置
 - 安装插件
 ```
 npm i hexo-githubcalendar --save
-
 ```
+
 - 在hexo的config.yml添加配置
-‵‵`yml
+
+```yml
 githubcalendar:
   enable: true
   enable_page: /  # 表示只在根目录(首页)显示
@@ -209,6 +215,40 @@ color: "['#ebedf0', '#f1f8ff', '#dbedff', '#c8e1ff', '#79b8ff', '#2188ff', '#036
 ```
 hexo clean && hexo g -d
 ```
+
+3. 添加搜索功能
+
+操作：
+- 安装插件
+```
+npm install pug
+npm install hexo-generator-search --save
+```
+
+如果出现问题，尝试运行
+```
+npm clean-install
+```
+
+- 修改全局配置_config.yml
+```
+search:
+  path: search.xml
+  field: post
+  content: true
+  template: ./search.xml
+```
+- 修改主题配置
+```
+local_search:
+  enable: true
+  labels:
+    input_placeholder: Search for Posts
+    hits_empty: "We didn't find any results for the search: ${query}" # if there are no result
+```
+
 参考链接:
 
 [关于我 Butterfly 主题的所有美化](https://blog.imzjw.cn/posts/b74f504f)
+
+[Hexo博客之butterfly主题优雅魔改系列](https://blog.csdn.net/u012208219/article/details/106883001/?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.no_search_link&spm=1001.2101.3001.4242.0)
