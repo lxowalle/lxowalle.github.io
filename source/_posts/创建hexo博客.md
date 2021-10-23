@@ -1,10 +1,12 @@
 ---
-title: 创建博客
+title: 创建hexo博客
 date: 2021-09-08 20:48:56
 categories: "未分类"
 tags:
 ---
-# HEXO博客搭建过程记录
+# 创建hexo博客
+
+参考自[这里](https://butterfly.js.org)
 
 #### 一、 博客搭建过程
 
