@@ -23,7 +23,7 @@ hide_sidebar_menu_child: false
 # Code Blocks (代碼相關)
 # --------------------------------------
 
-highlight_theme: mac light #  darker / pale night / light / ocean / mac / mac light / false
+highlight_theme: light #  darker / pale night / light / ocean / mac / mac light / false
 highlight_copy: true # copy button
 highlight_lang: false # show the code language
 highlight_shrink: false # true: shrink the code blocks / false: expand the code blocks | none: expand code blocks and hide the button
@@ -42,9 +42,10 @@ copy:
 # formal:
 #   icon: link || the description
 social:
-  # fab fa-github: https://github.com/xxxxx || Github
-  # fas fa-envelope: mailto:xxxxxx@gmail.com || Email
-
+  fab fa-github: https://github.com/lxowalle || Github
+  fas fa-envelope: mailto:lxowalle@outlook.com || Email
+  iconfont icon-wechat1: https://u.wechat.com/EAk7gmoi55GTsWcWwPHT7N0 || Wechat
+  iconfont icon-qq: https://wpa.qq.com/msgrd?v=3&uin=1024623077&site=qq&menu=yes || QQ
 # search (搜索)
 # --------------------------------------
 
@@ -91,7 +92,7 @@ avatar:
 disable_top_img: false
 
 # The banner image of home page
-index_img:
+index_img: http://pic.616pic.com/bg_w1180/00/24/03/ukCIeVFTCU.jpg!/fw/1120
 
 # If the banner of page not setting, it will show the top_img
 default_top_img: 'linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347)'
@@ -410,8 +411,8 @@ footer:
   owner:
     enable: true
     since: 2020
-  custom_text:
-  copyright: true # Copyright of theme and framework
+  custom_text: <p><a style="margin-inline:5px"target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为 Hexo" alt="HEXO"></a><a style="margin-inline:5px"target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用 Butterfly" alt="Butterfly"></a><a style="margin-inline:5px"target="_blank" href="https://www.jsdelivr.com/"><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&logo=jsDelivr" title="本站使用 Jsdelivr 为静态资源提供CDN加速" alt="Jsdelivr"></a><a style="margin-inline:5px"target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由 GitHub 托管" alt="GitHub"></a><a style="margin-inline:5px"target="_blank"href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" alt="img" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p>
+  copyright: false # Copyright of theme and framework
 
 # Analysis
 # --------------------------------------
@@ -834,7 +835,7 @@ css_prefix: true
 # 插入代码到头部 </head> 之前 和 底部 </body> 之前
 inject:
   head:
-    # - <link rel="stylesheet" href="/xxx.css">
+    - <link rel="stylesheet" href="/css/icon.css">
   bottom:
     # - <script src="xxxx"></script>
 
