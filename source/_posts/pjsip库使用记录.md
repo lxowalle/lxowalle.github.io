@@ -395,7 +395,7 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 4. 在命令行输入：
 
    ```
-   vid call tx on 1    # 打开视频传输 vid call tx on 0 # 关闭视频传输
+   vid call tx on 1    # 打开视频传输 vid call tx off 1 # 关闭视频传输
    ```
 
 5. (可选)在命令行输入：`vid dev prev on -1` 可以打开采集的设备的预览窗口
