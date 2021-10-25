@@ -246,7 +246,7 @@ pjsip库的主要有7个文件目录，在每个目录都对应一类功能，�
 
 ```shell
 # 安装依赖
-sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev ffmpeg
+sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev ffmpeg libavutil-dev
 
 # 拉取代码
 git clone https://github.com/pjsip/pjproject.git
@@ -265,7 +265,7 @@ git clone https://github.com/pjsip/pjproject.git
 cd pjproject
 git checkout 2.11.1
 make distclean
-./configure --prefix=$PWD/install --disable-libwebrtc --enable-shared=yes --enable-static=no
+./configure --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static
 make dep
 make -j8
 make install
@@ -275,7 +275,7 @@ cd pjproject
 git checkout 2.11.1
 make distclean
 PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin	# 添加工具链到PATH
-./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --enable-shared=yes --disable-static=no	# 交叉编译
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static	# 交叉编译
 make dep
 make -j8
 make install
@@ -286,8 +286,7 @@ tips:
 出现错误1：找不到-lasound
 
 >错误：arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
-
-解决1：将libasound.so复制到pjproject/pjlib/lib目录下
+>解决1：将libasound.so复制到pjproject/pjlib/lib目录下
 
 出现错误2：函数未定义
 
@@ -296,12 +295,11 @@ tips:
 >main.c:(.text+0x14): undefined reference to `backtrace'
 >
 >main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
-
-解决2：注销掉backtrace和backtrace_symbols_fd的相关调用
+>解决2：注销掉backtrace和backtrace_symbols_fd的相关调用
 
 出现错误3：交叉编译时出现编译平台错误
 
-解决3：在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF
+>解决3：在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF
 
 ### 2.2 pjsip库相关说明文档获取方法
 
