@@ -378,29 +378,23 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 > - VP8或VP9编解码需要：libvpx
 > - Linux环境还需要支持：Video4Linux2(v4l2)
 
-1. 执行命令`pjsua --config-file pjsua-cfg pjsua.cfg`注册本机（参考步骤1）
+1. 执行命令`pjsua --config-file pjsua.cfg`注册本机（参考步骤1）
 
 2. 在弹出的命令行输入：
 
    ```
-   vid enable   # 打开设备
-   vid acc autotx on   # 开始传输
-   vid acc autorx on   # 停止传输
+   vid enable           # 打开设备
+   vid acc autotx on    # 自动发送视频流
+   vid acc autorx on    # 自动接收视频流
    ```
 
 3. 拨号或接通电话
 
-4. 在命令行输入：
-
-   ```
-   vid call tx on 1    # 打开视频传输 vid call tx off 1 # 关闭视频传输
-   ```
+4. 拨通后可以视频和语音
 
 5. (可选)在命令行输入：`vid dev prev on -1` 可以打开采集的设备的预览窗口
 
 [视频通话说明文档](https://trac.pjsip.org/repos/wiki/Video_Users_Guide)
-
-## 
 
 ## 附录
 
@@ -516,7 +510,7 @@ TLS选项：
     --snd-auto-close=N  闲置N秒后自动关闭音频设备
                       指定n = -1（默认）禁用此功能。
                       指定即时关闭不使用时，N = 0。
-    --no-tones          禁用听见声音
+    --no-tones          禁用听见音频
     --jb-max-size       指定最大值抖动缓冲(帧，默认= 1)
 ```
 
@@ -561,6 +555,77 @@ TLS选项：
 ```c
 /** 打印错误信息 */
 pjsua_perror(THIS_FILE, "NAT detection failed", res->status);
+```
+
+内置回声消除
+```c
+pjmedia_echo_stat_default() // 初始化回声消除器统计
+pjmedia_echo_create()       // 创建回声消除器
+pjmedia_echo_create2()      // 创建回声消除器（多通道）
+pjmedia_echo_destroy()      // 销毁回声消除器
+pjmedia_echo_reset()        // 重置回声消除器
+pjmedia_echo_get_stat()     // 获取回声消除器的统计信息
+pjmedia_echo_playback()     // 通知回声消除器已经播放了一帧
+pjmedia_echo_capture()      // 通知回声消除器已经捕获了一帧
+pjmedia_echo_cancel()       // 回声消除器处理
+```
+
+
+接入一个外部的音频设备
+```c
+pjsua_media_config_default() // 初始化媒体配置
+pjsua_snd_dev_param_default() // 初始化设备参数
+pjsua_conf_connect_param_default() // 初始化连接参数
+pjsua_conf_get_max_ports()  // 获取会议桥最大端口数
+pjsua_conf_get_active_ports()   // 获取会议桥活动端口数
+pjsua_enum_conf_ports()     // 枚举会议桥所有端口的ID
+pjsua_conf_get_port_info()  // 根据端口号获取端口信息
+pjsua_conf_add_port()       // 将媒体端口添加到会议桥端口
+pjsua_conf_remove_port()    // 删除指定会议桥端口的插槽
+pjsua_conf_connect()        // 建立媒体源，可以是一个源到多个端口，也可以是多个源到一个端口，后者会将媒体混合
+pjsua_conf_connect2()       // 同上，多了一个参数来控制媒体流
+pjsua_conf_disconnect()     // 断开两个媒体流
+pjsua_conf_adjust_tx_level()    // 调节会议桥端口发送音频的大小
+pjsua_conf_adjust_rx_level()    // 调节会议桥端口接收音频的大小
+
+pjsua_player_create()       // 创建一个文件播放器并自动添加到会议桥
+pjsua_playlist_create()     // 创建文件播放器列表端口，并自动将该端口添加到会议桥
+jsua_player_get_conf_port() // 获取与文件播放器列表关联的会议桥端口
+pjsua_player_get_port()     // 获取播放器列表、播放器的端口
+pjsua_player_get_info()     // 获取播放器的信息（无法作用于播放器列表）
+pjsua_player_get_pos()      // 获取播放器播放的位置（无法作用于播放器列表）
+pjsua_player_set_pos()      // 设置播放器播放的位置（无法作用于播放器列表）
+pjsua_player_destroy()      // 释放播放器、播放器列表，同时释放与会议桥连接的所有资源
+
+pjsua_recorder_create()     // 创建一个录音器并自动添加到会议桥
+pjsua_recorder_get_conf_port()  // 获取与录音器关联的会议桥端口
+pjsua_recorder_get_port()   // 获取录音器的端口
+pjsua_recorder_destroy()    // 释放录音器，同时完成录音
+
+pjsua_enum_aud_devs()       // 枚举会议桥上的所有音频设备
+pjsua_get_snd_dev()         // 获取当前正在活跃的音频设备
+pjsua_set_snd_dev()         // 替换音频设备（选择音频设备的设备号）
+pjsua_set_snd_dev2()        // 替换音频设备，根据更多的设备参数来更改
+pjsua_set_null_snd_dev()    // 设置pjsua使用空设备
+pjsua_set_no_snd_dev()      // 断开会议桥上的所有音频设备
+
+pjsua_set_ec()              // 回音消除
+pjsua_get_ec_tail()         // 获取回音消除的尾部长度(ms)
+pjsua_get_ec_stat()         // 获取回音消除器的统计信息
+
+pjsua_snd_is_active()       // 获取当前音频设备是否活跃
+pjsua_snd_set_setting()     // 将音频设备设为正在使用，如果音频设备当前处于活动状态，则该功能会将设置转发到音频设备实例以立即应用（使用时需要参考一下说明）
+pjsua_snd_get_setting()     // 获取音频设备的设置
+pjsua_ext_snd_dev_create()  // 创建一个额外音频设备并注册到设备桥
+pjsua_ext_snd_dev_destroy() // 销毁一个额外音频设备并从会议桥中取消注册
+pjsua_ext_snd_dev_get_snd_port()    // 获取额外音频设备的媒体端口
+pjsua_ext_snd_dev_get_conf_port()   // 获取额外音频设备的会议桥端口
+
+pjsua_enum_codecs()         // 枚举系统支持的编解码器
+pjsua_codec_set_priority()  // 修改编解码器的优先级
+pjsua_codec_get_param()     // 获取编解码器的参数
+
+
 ```
 
 内置内存池的使用
