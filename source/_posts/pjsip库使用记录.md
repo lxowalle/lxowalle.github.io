@@ -48,7 +48,7 @@ tags:
 
 上面的示例中：
 
-1. 在通话，Alice会提前注册到atlanta.com服务器，Bob会提前注册到biloxi.com服务器。
+1. 在通话前，Alice会提前注册到atlanta.com服务器，Bob会提前注册到biloxi.com服务器。
 2. 现在开始通话，首先是Alice向Bob发起通话，但是由于不知道biloxi.com服务器和Bob的位置，所以将邀请发送给代理服务器atlanta.com，atlanta.com服务器会转发INVITE请求并返回一个100(trying)来响应Alice，Alice会将响应的文本与INVITE文本关联。注意：Alice发起INVITE时会附带SDP信息
 3. atlanta.com代理服务器会通过特定类型的DNS来找到为biloxi.com提供服务的SIP服务器，并获取到biloxi.com的IP地址，然后在Alice的INVITE请求文本前添加保存了自己IP地址的Via头字段并向biloxi.com服务器转发请求。biloxi.com服务器接收到INVATE请求后会返回一个100 (Trying)来响应atlanta.com服务器，随后通过查询数据库（定位服务）找到Bob的地址，biloxi.com服务器将带有自己地址的Via头字段添加到INVITE并代理到Bob的电话。
 4. Bob接受到INVITE后会提醒Bob有来自Alice的电话，并返回180 (Ring)来表示正在响铃。返回的180 (Ringing)会根据之前添加的Via字段依次返回到biloxi.com服务器，atlanta.com服务器和Alice（每次返回都会先删除自己添加的Via头字段），Alice此时也能收到回铃音的反馈。
@@ -345,7 +345,7 @@ miniSIPServer作为SIP服务器，[PortSIP](http://www.portsip.cn/download-ports
 
 2. 手机端打开PortSIP软件，输入用户名101，密码101，SIP Domain:192.168.0.15向SIP服务器注册
 
-3. pjsua端执行命令`pjsua --config-file pjsua-cfg pjsua.cfg`向SIP服务器注册
+3. pjsua端执行命令`pjsua --config-file pjsua.cfg`向SIP服务器注册
 
    ```shell
    # pjsua.cfg是用户创建的配置信息，内容如下
@@ -550,7 +550,9 @@ TLS选项：
                        0：拒绝，1：自动（默认），2：询问
 ```
 
-### 2. 打印错误信息
+### 2. pjsip库的一些API使用记录（官网有更详细的解释）
+
+打印错误信息
 
 ```c
 /** 打印错误信息 */
@@ -756,10 +758,6 @@ pjsua_call_answer2(call_id,                     // 来电标识
 pjsip_tls_setting_wipe_keys(&app_config.udp_cfg.tls_setting);       // 传入需要擦除的数据的指针
 ```
 
-
-
-### 2. pjsip库的一些API使用记录（官网有更详细的解释）
-
 打印错误信息
 
 ```c
@@ -894,5 +892,3 @@ pjsua_call_answer2(call_id,                     // 来电标识
 ```c
 pjsip_tls_setting_wipe_keys(&app_config.udp_cfg.tls_setting);       // 传入需要擦除的数据的指针
 ```
-
-## 

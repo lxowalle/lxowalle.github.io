@@ -88,6 +88,25 @@ make install
 
 需要替换的prims.cc内容在[这里](https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=libjava/prims.cc;hb=b33ddba240f10fbabd5e8ce12bb95038f0650886)复制
 
+问题6：
+
+make[6]: 进入目录“/home/liuxo/third_party/gcc-4.6.2/x86_64-unknown-linux-gnu/32/libjava/libltdl”
+make[6]: *** 没有规则可制作目标“x86_64-unknown-linux-gnu/libgfortran/libgfortran.la”，由“all-am” 需求。 停止。
+
+解决方法：
+
+```
+前面的步骤导致中间文件影响的编译，重新编译
+1. 执行命令：cd gcc-4.6.2
+2. 执行命令：./contrib/download_prerequisites 			# 安装依赖（mpc,mpfr,gmp）
+3. 执行命令：./configure --prefix=/usr/local/gcc-4.6.2	# 这里让GCC安装到指定目录
+4. 替换/gcc-4.6.2/libjava目录下的prims.cc文件		# 参考问题5
+5. 执行命令：export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+6. 把GCC源码所有的struct siginfo替换为siginfo_t，所有的struct ucontext替换为ucontext_t
+7. make -j8
+8. 编译一路畅通直到完成
+```
+
 ##### 5. 安装（可选）
 
 ```
@@ -95,15 +114,15 @@ make check
 sudo make install
 ```
 
-问题6：error: relink `libgfortran.la' with the above command before installing it
+问题7：error: relink `libgfortran.la' with the above command before installing it
 
 解决方法：
 
 ```
-
+按照问题7解决
 ```
 
-问题7：autogen：未找到命令（该问题是执行make check出现）
+问题8：autogen：未找到命令（该问题是执行make check出现）
 
 解决方法：
 
@@ -111,7 +130,7 @@ sudo make install
 sudo apt install autoconf automake libtool autogen
 ```
 
-问题8：runtest: 未找到命令（该问题是执行make check出现）
+问题9：runtest: 未找到命令（该问题是执行make check出现）
 
 解决方法：
 
@@ -121,10 +140,7 @@ sudo apt install dejagnu
 
 问题8参考自[这里](https://command-not-found.com/runtest)
 
-问题9：
 
-make[6]: 进入目录“/home/liuxo/third_party/gcc-4.6.2/x86_64-unknown-linux-gnu/32/libjava/libltdl”
-make[6]: *** 没有规则可制作目标“x86_64-unknown-linux-gnu/libgfortran/libgfortran.la”，由“all-am” 需求。 停止。
 
 
 
