@@ -1,7 +1,8 @@
 ---
 title: Linux内核学习-编译内核
 date: 2021-10-25 11:23:55
-tags:
+tag: Linux
+categories: Linux内核学习
 ---
 
 # Linux内核学习-编译内核
