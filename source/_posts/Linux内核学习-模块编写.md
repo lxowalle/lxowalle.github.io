@@ -1,10 +1,11 @@
 ---
-title: Linux ko模块编写
-date: 2021-10-20 17:57:42
-tags:
+title: Linux内核学习-模块编写
+date: 2021-10-25 11:23:55
+tag: Linux
+categories: Linux内核学习
 ---
 
-# Linux ko模块编写
+# Linux内核学习-模块编写
 
 下面通过一个[github项目](https://github.com/junhuanchen/linux_python_ioctl_driver)来学习ko模块的编写过程。
 

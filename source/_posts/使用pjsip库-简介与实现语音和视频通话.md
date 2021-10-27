@@ -253,15 +253,14 @@ git clone https://github.com/pjsip/pjproject.git
 
 # 更改配置文件`pjproject/pjlib/include/pj/config_site.h`的内容(没有该文件就新建一个)
 #include <pj/config_site_sample.h>
-#define PJMEDIA_AUDIO_DEV_HAS_ALSA	1
+#define PJMEDIA_AUDIO_DEV_HAS_ALSA	        1
 
-#define PJMEDIA_HAS_VIDEO		1
-#define PJMEDIA_HAS_FFMPEG		1
-#define PJMEDIA_HAS_FFMPEG_CODEC_H264   1
-#define PJMEDIA_VIDEO_DEV_HAS_SDL	1
-#define PJMEDIA_VIDEO_DEV_HAS_V4L2	1
+#define PJMEDIA_HAS_VIDEO		            1
+#define PJMEDIA_HAS_FFMPEG		            1
+#define PJMEDIA_HAS_FFMPEG_CODEC_H264       1
+#define PJMEDIA_VIDEO_DEV_HAS_V4L2	        1
 
-# 编译代码
+# 编译代码，方法1（运行在本地）
 cd pjproject
 git checkout 2.11.1
 make distclean
@@ -270,12 +269,12 @@ make dep
 make -j8
 make install
 
-# 编译代码（交叉编译）
+# 编译代码，方法2（交叉编译）
 cd pjproject
 git checkout 2.11.1
 make distclean
-PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin	# 添加工具链到PATH
-./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static	# 交叉编译
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin	# 设置交叉编译工具链到PATH
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static    # ps:好像并不能关掉静态库生成
 make dep
 make -j8
 make install
@@ -283,23 +282,18 @@ make install
 
 tips:
 
-出现错误1：找不到-lasound
+出现错误1：arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
+>解决1：将libasound.so复制到pjproject/pjlib/lib目录下,或者添加libasound的路径，例如`./configure LDFLAGS="-L/home/liuxo/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833"`
 
->错误：arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
->解决1：将libasound.so复制到pjproject/pjlib/lib目录下
-
-出现错误2：函数未定义
-
->output/pjlib-test-arm-openwrt-linux-gnu-muslgnueabi/main.o: In function > > `print_stack':
->
->main.c:(.text+0x14): undefined reference to `backtrace'
->
->main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
->解决2：注销掉backtrace和backtrace_symbols_fd的相关调用
+出现错误2：main.c:(.text+0x14): undefined reference to `backtrace'  
+            main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
+>解决2：注释掉backtrace和backtrace_symbols_fd的相关调用
 
 出现错误3：交叉编译时出现编译平台错误
+>解决3：在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF，例如`#define PJ_AUTOCONF`
 
->解决3：在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF
+出现错误4：error: libavutil/avutil.h: No such file or directory
+>解决4： 查看交叉编译工具的默认搜索目录：`echo 'main(){}'|arm-linux-gcc -E -v -`，并将缺少的头文件复制到交叉编译工具的搜索目录中
 
 ### 2.2 pjsip库相关说明文档获取方法
 
