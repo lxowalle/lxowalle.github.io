@@ -43,3 +43,13 @@ pjmedia_echo_playback()     // 通知回声消除器已经播放了一帧
 pjmedia_echo_capture()      // 通知回声消除器已经捕获了一帧
 pjmedia_echo_cancel()       // 回声消除器处理
 ```
+
+需要快速启动内置的回声消除时，可以在pjsua_init()前修改media_cfg参数的ec_options选项即可，将该值设为PJMEDIA_ECHO_USE_SW_ECHO即可开启软件回声消除。
+
+```c
+/* 开启回声消除 */
+app_config.media_cfg.ec_options |= PJMEDIA_ECHO_USE_SW_ECHO;
+/* 初始化pjsua */
+status = pjsua_init(&app_config.cfg, &app_config.log_cfg, &app_config.media_cfg);
+```
+

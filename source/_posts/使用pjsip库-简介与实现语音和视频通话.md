@@ -273,27 +273,81 @@ make install
 cd pjproject
 git checkout 2.11.1
 make distclean
-PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin	# 设置交叉编译工具链到PATH
-./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static    # ps:好像并不能关掉静态库生成
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static LDFLAGS="-L/home/liuxo/third_party/FFmpeg/install/lib" LIBS="-lavutil -lswresample -lavformat -lavcodec -lswscale"    # ps:好像并不能关掉静态库生成
 make dep
+make -j8
+make install
+```
+
+**FFMPEG交叉编译：**
+
+```
+# 拉取代码
+git clone https://github.com/FFmpeg/FFmpeg.git
+cd FFmpeg
+checkout n4.2.5
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin
+./configure --cross-prefix=arm-openwrt-linux-muslgnueabi- --enable-cross-compile --prefix=$PWD/install --enable-shared --arch=arm --target-os=linux
 make -j8
 make install
 ```
 
 tips:
 
-出现错误1：arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
->解决1：将libasound.so复制到pjproject/pjlib/lib目录下,或者添加libasound的路径，例如`./configure LDFLAGS="-L/home/liuxo/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833"`
+1. 出现错误
 
-出现错误2：main.c:(.text+0x14): undefined reference to `backtrace'  
-            main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
->解决2：注释掉backtrace和backtrace_symbols_fd的相关调用
+   ```
+   arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound
+   ```
 
-出现错误3：交叉编译时出现编译平台错误
->解决3：在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF，例如`#define PJ_AUTOCONF`
+   将libasound.so复制到pjproject/pjlib/lib目录下,或者添加libasound的路径，例如:
 
-出现错误4：error: libavutil/avutil.h: No such file or directory
->解决4： 查看交叉编译工具的默认搜索目录：`echo 'main(){}'|arm-linux-gcc -E -v -`，并将缺少的头文件复制到交叉编译工具的搜索目录中
+   ````
+   ./configure LDFLAGS="-L/home/liuxo/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833"
+   ````
+
+2. 出现错误
+
+   ```
+   main.c:(.text+0x14): undefined reference to `backtrace'  
+   main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd'
+   ```
+
+   注释掉有关backtrace和backtrace_symbols_fd的函数
+
+3. 出现错误
+
+   ```
+   交叉编译时出现编译平台错误
+   ```
+
+   在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF，例如`#define PJ_AUTOCONF`
+
+4. 出现错误
+
+   ```
+   error: libavutil/avutil.h: No such file or directory
+   ```
+
+   查看交叉编译工具的默认搜索目录：`echo 'main(){}'|arm-linux-gcc -E -v -`，并将缺少的头文件复制到交叉编译工具的搜索目录中
+
+5. 出现错误
+
+   ```
+   /home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_frame_unref'
+   /home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `avcodec_encode_video2'
+   /home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_opt_set'
+   /home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_opt_set_int'
+   ```
+
+   发现Makefile在编译动态库时默认是没有链接FFmpeg库，需要主动交叉编译FFMPEG并且通过LDFLAGS设置外部库的路径，LIBS设置需要链接的库，例如:
+
+   ```
+   ./configure LDFLAGS="-L/home/liuxo/third_party/FFmpeg/install/lib" LIBS="-lavutil -lswresample -lavformat -lavcodec -lswscale"
+   ```
+
+   
 
 ### 2.2 pjsip库相关说明文档获取方法
 
@@ -541,4 +595,6 @@ TLS选项：
     --accept-redirect=N 指定如何处理呼叫重定向响应（3XX）。
                        0：拒绝，1：自动（默认），2：询问
 ```
+
+
 
