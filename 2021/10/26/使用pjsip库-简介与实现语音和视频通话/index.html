@@ -1,0 +1,363 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>使用pjsip库-简介与实现语音和视频通话 | lxowalle</title><meta name="keywords" content="Linux"><meta name="author" content="lxowalle"><meta name="copyright" content="lxowalle"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="使用pjsip库-简介与实现语音和视频通话一、简单介绍​        pjsip库是一个用C写的多媒体通信库，核心功能就是实现语音和视频通话，围绕这两个功能添加了很多协议支持。SIP信令协议实现会话的创建、修改和终止，SDP协议用来双方描述自身会话信息。RTP协议实现单播和多播网络中实时传输提供时间信息和流同步。STUN用于协助NAT穿越等等。 1.1 SIP信令协议参考自：RFC3261 下面">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用pjsip库-简介与实现语音和视频通话">
+<meta property="og:url" content="https://lxowalle.github.io/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/index.html">
+<meta property="og:site_name" content="lxowalle">
+<meta property="og:description" content="使用pjsip库-简介与实现语音和视频通话一、简单介绍​        pjsip库是一个用C写的多媒体通信库，核心功能就是实现语音和视频通话，围绕这两个功能添加了很多协议支持。SIP信令协议实现会话的创建、修改和终止，SDP协议用来双方描述自身会话信息。RTP协议实现单播和多播网络中实时传输提供时间信息和流同步。STUN用于协助NAT穿越等等。 1.1 SIP信令协议参考自：RFC3261 下面">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/liuxo/images/raw/master/blog/34.png">
+<meta property="article:published_time" content="2021-10-26T12:02:59.000Z">
+<meta property="article:modified_time" content="2021-10-30T14:27:48.029Z">
+<meta property="article:author" content="lxowalle">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/liuxo/images/raw/master/blog/34.png"><link rel="shortcut icon" href="/img/dog_head.png"><link rel="canonical" href="https://lxowalle.github.io/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":false,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '使用pjsip库-简介与实现语音和视频通话',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-10-30 22:27:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/icon.css"><link rel="stylesheet" href="/css/user.css"><meta name="generator" content="Hexo 5.4.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dog.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">lxowalle</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">使用pjsip库-简介与实现语音和视频通话</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-10-26T12:02:59.000Z" title="发表于 2021-10-26 20:02:59">2021-10-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-10-30T14:27:48.029Z" title="更新于 2021-10-30 22:27:48">2021-10-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/pjsip/">pjsip</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="使用pjsip库-简介与实现语音和视频通话"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h1 id="使用pjsip库-简介与实现语音和视频通话"><a href="#使用pjsip库-简介与实现语音和视频通话" class="headerlink" title="使用pjsip库-简介与实现语音和视频通话"></a>使用pjsip库-简介与实现语音和视频通话</h1><h2 id="一、简单介绍"><a href="#一、简单介绍" class="headerlink" title="一、简单介绍"></a>一、简单介绍</h2><p>​        pjsip库是一个用C写的多媒体通信库，核心功能就是实现语音和视频通话，围绕这两个功能添加了很多协议支持。SIP信令协议实现会话的创建、修改和终止，SDP协议用来双方描述自身会话信息。RTP协议实现单播和多播网络中实时传输提供时间信息和流同步。STUN用于协助NAT穿越等等。</p>
+<h3 id="1-1-SIP信令协议"><a href="#1-1-SIP信令协议" class="headerlink" title="1.1 SIP信令协议"></a>1.1 SIP信令协议</h3><p>参考自：<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/inline-errata/rfc3261.html">RFC3261</a></p>
+<p>下面描述中atlanta.com和biloxi.com是用于SIP电话(可以称为softpthoe或软电话)通信的服务器。Alice和Bob是两个SIP电话。下面的示例是Alice向Bob播出电话的示例:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">               atlanta.com  . . . biloxi.com</span><br><span class="line">           .      proxy              proxy     .</span><br><span class="line">         .                                       .</span><br><span class="line"> Alice&#x27;s  . . . . . . . . . . . . . . . . . . . .  Bob&#x27;s</span><br><span class="line">softphone                                        SIP Phone</span><br><span class="line">   |                |                |                |</span><br><span class="line">   |    INVITE F1   |                |                |</span><br><span class="line">   |---------------&gt;|    INVITE F2   |                |</span><br><span class="line">   |  100 Trying F3 |---------------&gt;|    INVITE F4   |</span><br><span class="line">   |&lt;---------------|  100 Trying F5 |---------------&gt;|</span><br><span class="line">   |                |&lt;-------------- | 180 Ringing F6 |</span><br><span class="line">   |                | 180 Ringing F7 |&lt;---------------|</span><br><span class="line">   | 180 Ringing F8 |&lt;---------------|     200 OK F9  |</span><br><span class="line">   |&lt;---------------|    200 OK F10  |&lt;---------------|</span><br><span class="line">   |    200 OK F11  |&lt;---------------|                |</span><br><span class="line">   |&lt;---------------|                |                |</span><br><span class="line">   |                       ACK F12                    |</span><br><span class="line">   |-------------------------------------------------&gt;|</span><br><span class="line">   |                   Media Session                  |</span><br><span class="line">   |&lt;================================================&gt;|</span><br><span class="line">   |                       BYE F13                    |</span><br><span class="line">   |&lt;-------------------------------------------------|</span><br><span class="line">   |                     200 OK F14                   |</span><br><span class="line">   |-------------------------------------------------&gt;|</span><br><span class="line">   |                                                  |</span><br></pre></td></tr></table></figure>
+
+<p>上面的示例中：</p>
+<ol>
+<li>在通话前，Alice会提前注册到atlanta.com服务器，Bob会提前注册到biloxi.com服务器。</li>
+<li>现在开始通话，首先是Alice向Bob发起通话，但是由于不知道biloxi.com服务器和Bob的位置，所以将邀请发送给代理服务器atlanta.com，atlanta.com服务器会转发INVITE请求并返回一个100(trying)来响应Alice，Alice会将响应的文本与INVITE文本关联。注意：Alice发起INVITE时会附带SDP信息</li>
+<li>atlanta.com代理服务器会通过特定类型的DNS来找到为biloxi.com提供服务的SIP服务器，并获取到biloxi.com的IP地址，然后在Alice的INVITE请求文本前添加保存了自己IP地址的Via头字段并向biloxi.com服务器转发请求。biloxi.com服务器接收到INVATE请求后会返回一个100 (Trying)来响应atlanta.com服务器，随后通过查询数据库（定位服务）找到Bob的地址，biloxi.com服务器将带有自己地址的Via头字段添加到INVITE并代理到Bob的电话。</li>
+<li>Bob接受到INVITE后会提醒Bob有来自Alice的电话，并返回180 (Ring)来表示正在响铃。返回的180 (Ringing)会根据之前添加的Via字段依次返回到biloxi.com服务器，atlanta.com服务器和Alice（每次返回都会先删除自己添加的Via头字段），Alice此时也能收到回铃音的反馈。</li>
+<li>如果Bob接受了电话，则会返回200 (OK)并附带SDP消息来描述会话信息。</li>
+</ol>
+<p>发起邀请的文本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">INVITE sip:bob@biloxi.com SIP/2.0</span><br><span class="line">Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK776asdhds</span><br><span class="line">Max-Forwards: 70</span><br><span class="line">To: Bob &lt;sip:bob@biloxi.com&gt;</span><br><span class="line">From: Alice &lt;sip:alice@atlanta.com&gt;;tag=1928301774</span><br><span class="line">Call-ID: a84b4c76e66710@pc33.atlanta.com</span><br><span class="line">CSeq: 314159 INVITE</span><br><span class="line">Contact: &lt;sip:alice@pc33.atlanta.com&gt;</span><br><span class="line">Content-Type: application/sdp</span><br><span class="line">Content-Length: 142</span><br></pre></td></tr></table></figure>
+
+<p>接受邀请的文本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">SIP/2.0 200 OK</span><br><span class="line">Via: SIP/2.0/UDP server10.biloxi.com				# biloxi.com</span><br><span class="line">;branch=z9hG4bKnashds8;received=192.0.2.3</span><br><span class="line">Via: SIP/2.0/UDP bigbox3.site3.atlanta.com			# atlanta.com添加</span><br><span class="line">;branch=z9hG4bK77ef4c2312983.1;received=192.0.2.2	</span><br><span class="line">Via: SIP/2.0/UDP pc33.atlanta.com					# Alice添加</span><br><span class="line">;branch=z9hG4bK776asdhds ;received=192.0.2.1</span><br><span class="line">To: Bob &lt;sip:bob@biloxi.com&gt;;tag=a6c85cf</span><br><span class="line">From: Alice &lt;sip:alice@atlanta.com&gt;;tag=1928301774</span><br><span class="line">Call-ID: a84b4c76e66710@pc33.atlanta.com</span><br><span class="line">CSeq: 314159 INVITE</span><br><span class="line">Contact: &lt;sip:bob@192.0.2.4&gt;</span><br><span class="line">Content-Type: application/sdp</span><br><span class="line">Content-Length: 131</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-SDP协议"><a href="#1-2-SDP协议" class="headerlink" title="1.2 SDP协议"></a>1.2 SDP协议</h3><p>参考自：<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc8866.html">RFC8866</a></p>
+<h4 id="1-2-1-描述"><a href="#1-2-1-描述" class="headerlink" title="1.2.1 描述"></a>1.2.1 描述</h4><p>​    SDP与SIP一起使用时，SDP被用来格式化SIP创建会话的消息中携带会话描述。这些SDP描述包括以下内容：</p>
+<ul>
+<li>会话名称和目的</li>
+<li>会话处于活动状态的时间</li>
+<li>包含会话的媒体</li>
+<li>接受这些媒体所需的信息<ul>
+<li>媒体类型（video,audio）</li>
+<li>媒体传输协议（RTP/UDP/IP,H.320）</li>
+<li>媒体格式（H.261 video,MPEG video）</li>
+<li>媒体多组播地址</li>
+<li>媒体传输端口</li>
+<li>媒体远程地址（单播IP会话）</li>
+<li>媒体的远程传输端口（单播IP会话）</li>
+</ul>
+</li>
+<li>会话使用的带宽信息</li>
+<li>会议负责人的联系方式</li>
+</ul>
+<p>​    SDP必须传达足够的信息以使应用程序能够加入会话，并向可能需要知道的任何非参与者宣布要使用的资源</p>
+<h4 id="1-2-2-规范"><a href="#1-2-2-规范" class="headerlink" title="1.2.2 规范"></a>1.2.2 规范</h4><h5 id="基本格式"><a href="#基本格式" class="headerlink" title="基本格式"></a>基本格式</h5><p>SDP协议由多行文本信息组成，基本格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;type&gt;=&lt;value&gt;</span><br></pre></td></tr></table></figure>
+
+<p>说明：</p>
+<blockquote>
+<p>type:是一个区分大小写的字符。</p>
+<p>=：等号两侧不使用空格分割符。如果有空格，那么这个空格代表value的一部分</p>
+<p>value:是一个取决于type的结构化文本，由单个空格字符或自由格式字符串分隔的多个子字段，除非特定字段另有定义，否则区分大小写</p>
+</blockquote>
+<h5 id="SDP描述说明"><a href="#SDP描述说明" class="headerlink" title="SDP描述说明"></a>SDP描述说明</h5><p>​    SDP描述中某些行必须存在，某些行可选。下面的格式中带*号表示可选行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">会话描述</span><br><span class="line">   v=（会话描述协议的版本）</span><br><span class="line">   o=（发起者和会话标识符）</span><br><span class="line">   s=（会话名称）</span><br><span class="line">   i=*（会话信息）</span><br><span class="line">   u=*（描述的URI）</span><br><span class="line">   e=*（电子邮件地址）</span><br><span class="line">   p=*（电话号码）</span><br><span class="line">   c=*（连接信息——如果包含在所有媒体描述）</span><br><span class="line">   b=*（零个或多个带宽信息行）</span><br><span class="line">   一个或多个时间描述：</span><br><span class="line">     （“t=”、“r=”和“z=”行；见下文）</span><br><span class="line">   k=*（已过时）</span><br><span class="line">   a=*（零个或多个会话属性行）</span><br><span class="line">   零个或多个媒体描述</span><br><span class="line"></span><br><span class="line">时间说明</span><br><span class="line">   t=（会话处于活动状态的时间）</span><br><span class="line">   r=*（零次或多次重复）</span><br><span class="line">   z=*（可选时区偏移线）</span><br><span class="line"></span><br><span class="line">媒体描述（如果有）</span><br><span class="line">   m=（媒体名称和传输地址）</span><br><span class="line">   i=*（媒体标题）</span><br><span class="line">   c=*（连接信息——可选，如果包含在</span><br><span class="line">        会话级别）</span><br><span class="line">   b=*（零个或多个带宽信息行）</span><br><span class="line">   k=*（已过时）</span><br><span class="line">   a=*（零个或多个媒体属性行）</span><br></pre></td></tr></table></figure>
+
+<h5 id="SDP描述的实例"><a href="#SDP描述的实例" class="headerlink" title="SDP描述的实例"></a>SDP描述的实例</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">v=0</span><br><span class="line">o=jdoe 3724394400 3724394405 IN IP4 198.51.100.1</span><br><span class="line">s=Call to John Smith</span><br><span class="line">i=SDP Offer #1</span><br><span class="line">u=http://www.jdoe.example.com/home.html</span><br><span class="line">e=Jane Doe &lt;jane@jdoe.example.com&gt;</span><br><span class="line">p=+1 617 555-6011</span><br><span class="line">c=IN IP4 198.51.100.1</span><br><span class="line">t=0 0</span><br><span class="line">m=audio 49170 RTP/AVP 0</span><br><span class="line">m=audio 49180 RTP/AVP 0</span><br><span class="line">m=video 51372 RTP/AVP 99</span><br><span class="line">c=IN IP6 2001:db8::2</span><br><span class="line">a=rtpmap:99 h263-1998/90000</span><br></pre></td></tr></table></figure>
+
+<p>对上面实例的注释：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 会话描述协议的版本，没有次版本号</span></span><br><span class="line">v=0</span><br><span class="line"><span class="meta">#</span><span class="bash"> o=&lt;username&gt; &lt;sess-id&gt; &lt;sess-version&gt; &lt;nettype&gt; &lt;addrtype&gt; &lt;unicast-address&gt;</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 会话发起者jdoe,会话id：3724394400，会话版本：3724394405，网络类型：IN(IN表示Internet)，地址类型：IP4,单播地址：198.51.100.1</span></span><br><span class="line">o=jdoe 3724394400 3724394405 IN IP4 198.51.100.1</span><br><span class="line"><span class="meta">#</span><span class="bash"> s=&lt;会话名称&gt;</span></span><br><span class="line">s=Call to John Smith</span><br><span class="line"><span class="meta">#</span><span class="bash"> i=&lt;会话信息&gt;</span></span><br><span class="line">i=SDP Offer #1</span><br><span class="line"><span class="meta">#</span><span class="bash"> u=&lt;uri&gt;</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 指向与会话有关的可读信息的指针</span></span><br><span class="line">u=http://www.jdoe.example.com/home.html</span><br><span class="line"><span class="meta">#</span><span class="bash"> e=&lt;电子邮件地址&gt;</span> </span><br><span class="line">e=Jane Doe &lt;jane@jdoe.example.com&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> p=&lt;电话号码&gt;</span></span><br><span class="line">p=+1 617 555-6011</span><br><span class="line"><span class="meta">#</span><span class="bash"> c=&lt;nettype&gt; &lt;addrtype&gt; &lt;connection-address&gt;</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 连接信息</span></span><br><span class="line">c=IN IP4 198.51.100.1</span><br><span class="line"><span class="meta">#</span><span class="bash"> t=&lt;开始时间&gt; &lt;停止时间&gt;</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 开始时间为0表示立即开始，停止时间为0表示会话永不停止</span></span><br><span class="line">t=0 0</span><br><span class="line"><span class="meta">#</span><span class="bash"> m=&lt;media&gt; &lt;port&gt; &lt;proto&gt; &lt;fmt&gt; ...</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 媒体为audio，端口49170，协议为RTP/AVP，格式0</span></span><br><span class="line">m=audio 49170 RTP/AVP 0</span><br><span class="line">m=audio 49180 RTP/AVP 0</span><br><span class="line"><span class="meta">#</span><span class="bash"> 媒体为vedio，端口51372，协议为RTP/AVP，格式99</span></span><br><span class="line">m=video 51372 RTP/AVP 99</span><br><span class="line"><span class="meta">#</span><span class="bash"> 这里c=表示地址映射</span></span><br><span class="line">c=IN IP6 2001:db8::2</span><br><span class="line"><span class="meta">#</span><span class="bash"> a=表示某个属性，这里属性是rtpmap</span></span><br><span class="line">a=rtpmap:99 h263-1998/90000</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>RTP,STUN,TURN,ICE协议暂时用不到，先不关注。</p>
+</blockquote>
+<h2 id="二、pjsip库"><a href="#二、pjsip库" class="headerlink" title="二、pjsip库"></a>二、pjsip库</h2><p><a target="_blank" rel="noopener" href="https://www.pjsip.org/">pjsip官网</a></p>
+<p>pjsip库的主要有7个文件目录，在每个目录都对应一类功能，并且可以编译为单独的库，每个目录内都有对应的测试程序。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+---pjlib			# 基础库，所有库的基础库</span><br><span class="line">+---pjlib-util		# 辅助库，包含XML、STUN、MD5算法等</span><br><span class="line">+---pjmedia			# 媒体库，包含各种媒体的编解码器</span><br><span class="line">+---pjnath			# 网络相关库，包含STUN、TURN、ICE的实现</span><br><span class="line">+---pjsip			# SIP协议栈</span><br><span class="line">+---pjsip-apps		# 示例程序的实现，可以在这里参考一些API的使用</span><br><span class="line">+---third_party		# 第三方库的源码，Speex、iLBC 和 GSM 编解码器</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-编译"><a href="#2-1-编译" class="headerlink" title="2.1 编译"></a>2.1 编译</h3><p>​    pjsip库最新版是2.11.1版，在github上<a target="_blank" rel="noopener" href="https://github.com/pjsip/pjproject">获取源码</a>。基本编译方法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装依赖</span></span><br><span class="line">sudo apt-get install build-essential git-core checkinstall yasm texi2html libvorbis-dev libx11-dev libvpx-dev libxfixes-dev zlib1g-dev pkg-config netcat libncurses5-dev nasm libx264-dev libv4l-dev libasound2-dev libsdl2-dev libxext-dev ffmpeg libavutil-dev libavcodec-dev libavformat-dev libswscale-dev</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 拉取代码</span></span><br><span class="line">git clone https://github.com/pjsip/pjproject.git</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 更改配置文件`pjproject/pjlib/include/pj/config_site.h`的内容(没有该文件就新建一个)</span></span><br><span class="line"><span class="meta">#</span><span class="bash">include &lt;pj/config_site_sample.h&gt;</span></span><br><span class="line"><span class="meta">#</span><span class="bash">define PJMEDIA_AUDIO_DEV_HAS_ALSA	        1</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">define PJMEDIA_HAS_VIDEO		            1</span></span><br><span class="line"><span class="meta">#</span><span class="bash">define PJMEDIA_HAS_FFMPEG		            1</span></span><br><span class="line"><span class="meta">#</span><span class="bash">define PJMEDIA_HAS_FFMPEG_CODEC_H264       1</span></span><br><span class="line"><span class="meta">#</span><span class="bash">define PJMEDIA_VIDEO_DEV_HAS_V4L2	        1</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译代码，方法1（运行在本地）</span></span><br><span class="line">cd pjproject</span><br><span class="line">git checkout 2.11.1</span><br><span class="line">make distclean</span><br><span class="line">./configure --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static</span><br><span class="line">make dep</span><br><span class="line">make -j8</span><br><span class="line">make install</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译代码，方法2（交叉编译）</span></span><br><span class="line">cd pjproject</span><br><span class="line">git checkout 2.11.1</span><br><span class="line">make distclean</span><br><span class="line">PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin</span><br><span class="line">./configure --host=arm-openwrt-linux-muslgnueabi --prefix=$PWD/install --disable-libwebrtc --disable-libyuv --enable-shared --disable-static LDFLAGS=&quot;-L/home/liuxo/third_party/FFmpeg/install/lib&quot; LIBS=&quot;-lavutil -lswresample -lavformat -lavcodec -lswscale&quot;    # ps:好像并不能关掉静态库生成</span><br><span class="line">make dep</span><br><span class="line">make -j8</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p><strong>FFMPEG交叉编译：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 拉取代码</span><br><span class="line">git clone https://github.com/FFmpeg/FFmpeg.git</span><br><span class="line">cd FFmpeg</span><br><span class="line">checkout n4.2.5</span><br><span class="line">PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin</span><br><span class="line">./configure --cross-prefix=arm-openwrt-linux-muslgnueabi- --enable-cross-compile --prefix=$PWD/install --enable-shared --arch=arm --target-os=linux</span><br><span class="line">make -j8</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>tips:</p>
+<ol>
+<li><p>出现错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-openwrt-linux-muslgnueabi/bin/ld: cannot find -lasound</span><br></pre></td></tr></table></figure>
+
+<p>将libasound.so复制到pjproject/pjlib/lib目录下,或者添加libasound的路径，例如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure LDFLAGS=&quot;-L/home/liuxo/sipeed/MF_SDK_v83x/components/libmaix/libmaix/components/libmaix/lib/arch/v833&quot;</span><br></pre></td></tr></table></figure></li>
+<li><p>出现错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main.c:(.text+0x14): undefined reference to `backtrace&#x27;  </span><br><span class="line">main.c:(.text+0x44): undefined reference to `backtrace_symbols_fd&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>注释掉有关backtrace和backtrace_symbols_fd的函数</p>
+</li>
+<li><p>出现错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">交叉编译时出现编译平台错误</span><br></pre></td></tr></table></figure>
+
+<p>在pjproject/pjlib/include/pj/config.h下定义宏PJ_AUTOCONF，例如<code>#define PJ_AUTOCONF</code></p>
+</li>
+<li><p>出现错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: libavutil/avutil.h: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<p>查看交叉编译工具的默认搜索目录：<code>echo &#39;main()&#123;&#125;&#39;|arm-linux-gcc -E -v -</code>，并将缺少的头文件复制到交叉编译工具的搜索目录中</p>
+</li>
+<li><p>出现错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_frame_unref&#x27;</span><br><span class="line">/home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `avcodec_encode_video2&#x27;</span><br><span class="line">/home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_opt_set&#x27;</span><br><span class="line">/home/liuxo/third_party/pjproject/pjmedia/lib/libpjmedia-codec.so: undefined reference to `av_opt_set_int&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>发现Makefile在编译动态库时默认是没有链接FFmpeg库，需要主动交叉编译FFMPEG并且通过LDFLAGS设置外部库的路径，LIBS设置需要链接的库，例如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure LDFLAGS=&quot;-L/home/liuxo/third_party/FFmpeg/install/lib&quot; LIBS=&quot;-lavutil -lswresample -lavformat -lavcodec -lswscale&quot;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="2-2-pjsip库相关说明文档获取方法"><a href="#2-2-pjsip库相关说明文档获取方法" class="headerlink" title="2.2 pjsip库相关说明文档获取方法"></a>2.2 pjsip库相关说明文档获取方法</h3><p>官网有很详细的资料，基本上所有说明都从官网获取</p>
+<p><strong>PJSIP函数、结构体、变量查询：</strong></p>
+<p>例如需要查询<code>pjsua_perror()</code>函数的用法：</p>
+<ul>
+<li>打开<a target="_blank" rel="noopener" href="https://www.pjsip.org/">官网</a></li>
+<li>找到网页最上方的搜索栏，填入<code>pjsua_perror</code>并点击Search，确认提交表单</li>
+<li>查看弹出的网页可以找到关于<code>pjsua_perror</code>的说明</li>
+</ul>
+<p>ps：</p>
+<blockquote>
+<p>1、可能需要科学上网<br>2、函数、结构体、变量的说明都可以通过上述方式查到</p>
+</blockquote>
+<p><strong>PJSIP API使用方式参考</strong></p>
+<p>可以通过运行和看test源码来快速应用。pjproject/pjsip-apps目录下有很多pjsip库的应用测试程序，如果用C编程可以参考pjproject/pjsip-apps/pjsua目录下的程序，该程序对应的可执行文件位于pjproject/pjsip-apps/bin目录下的pjsua可执行文件。</p>
+<p>通过应用pjsua程序测试，并观察源码的调用来快速掌握API的使用方法。</p>
+<p><strong>PJSIP Video使用方法参考(未成功)</strong></p>
+<p>pjsip库的Video支持有专门的文档介绍，可以参考<a target="_blank" rel="noopener" href="https://trac.pjsip.org/repos/wiki/Video_Users_Guide">这里</a></p>
+<h3 id="2-3-运行测试"><a href="#2-3-运行测试" class="headerlink" title="2.3 运行测试"></a>2.3 运行测试</h3><p>编译完成后通过pjproject/pjsip-apps/bin/pjsua程序进行测试。pjsua是基于pjsip库编译得到的一个命令行sip用户代理。</p>
+<h4 id="2-2-1-准备SIP服务器"><a href="#2-2-1-准备SIP服务器" class="headerlink" title="2.2.1 准备SIP服务器"></a>2.2.1 准备SIP服务器</h4><p>miniSIPServer作为SIP服务器，<a target="_blank" rel="noopener" href="http://www.portsip.cn/download-portsip-softphone/">PortSIP</a>软件作为手机端SIP客户端，Deepin编译出pjsua程序作为电脑端SIP客户端</p>
+<h4 id="2-2-2-pjsua测试"><a href="#2-2-2-pjsua测试" class="headerlink" title="2.2.2 pjsua测试"></a>2.2.2 pjsua测试</h4><p><strong>语音通话测试：</strong></p>
+<ol>
+<li><p>miniSIPServer设置ip地址(192.168.0.15)，从机地址(100,101)</p>
+</li>
+<li><p>手机端打开PortSIP软件，输入用户名101，密码101，SIP Domain:192.168.0.15向SIP服务器注册</p>
+</li>
+<li><p>pjsua端执行命令<code>pjsua --config-file pjsua.cfg</code>向SIP服务器注册</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> pjsua.cfg是用户创建的配置信息，内容如下</span></span><br><span class="line">--id sip:100@192.168.0.15</span><br><span class="line">--registrar sip:192.168.0.15</span><br><span class="line">--realm *</span><br><span class="line">--username 100</span><br><span class="line">--password 100</span><br><span class="line"></span><br><span class="line">--color</span><br></pre></td></tr></table></figure></li>
+<li><p>手机端拨号100，播出后应当能在pjsua端听到呼叫提示音</p>
+</li>
+<li><p>pjusa输入a并回车，再次输入200并回车，此时通话建立</p>
+</li>
+<li><p>正常通话</p>
+</li>
+</ol>
+<p><strong>视频通话测试：</strong></p>
+<p>注意：</p>
+<blockquote>
+<p>使用cheese工具可以验证摄像头是否可用</p>
+<p>启动视频通话需要有以下支持</p>
+<ul>
+<li>格式转换和视频需要：SDL(Version 2.0)</li>
+<li>H263编解码需要：libyuv 或 ffmpeg</li>
+<li>H264编解码需要：OpenH264或libx264或ffmpeg</li>
+<li>VP8或VP9编解码需要：libvpx</li>
+<li>Linux环境还需要支持：Video4Linux2(v4l2)</li>
+</ul>
+</blockquote>
+<ol>
+<li><p>执行命令<code>pjsua --config-file pjsua.cfg</code>注册本机（参考步骤1）</p>
+</li>
+<li><p>在弹出的命令行输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vid enable           # 打开设备</span><br><span class="line">vid acc autotx on    # 自动发送视频流</span><br><span class="line">vid acc autorx on    # 自动接收视频流</span><br></pre></td></tr></table></figure></li>
+<li><p>拨号或接通电话</p>
+</li>
+<li><p>拨通后即可视频和语音通话</p>
+</li>
+<li><p>(可选)在命令行输入：<code>vid dev prev on -1</code> 可以打开采集的设备的预览窗口</p>
+</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://trac.pjsip.org/repos/wiki/Video_Users_Guide">视频通话说明文档</a></p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="1-pjsua命令使用基本用法"><a href="#1-pjsua命令使用基本用法" class="headerlink" title="1. pjsua命令使用基本用法"></a>1. pjsua命令使用基本用法</h3><p>基本用法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pjsua [选项] [sip的url调用]</span><br></pre></td></tr></table></figure>
+
+<p>一般选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--config-file=file     读取从文件的配置/参数；</span><br><span class="line">--help         显示此帮助屏幕；</span><br><span class="line">--version         显示版本信息，配置信息；</span><br></pre></td></tr></table></figure>
+
+<p>日志记录选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">--log-file=fname    日志文件名（默认是stderr）；</span><br><span class="line">--log-level=N       设置日志的最大级别为N（0（无）6（跟踪））（默认值= 5）；</span><br><span class="line">--app-log-level=N   设置日志的最大水平为stdout显示（默认值= 4）；</span><br><span class="line">--color             运用丰富多彩的日志（在Win32默认开启）；</span><br><span class="line">--no-color          禁用丰富多彩的日志；</span><br><span class="line">--light-bg          使用白底黑字的颜色（默认是黑暗的背景）；</span><br></pre></td></tr></table></figure>
+
+<p>SIP帐户选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">--use-ims           开启和这个账号相关的3GPP/IMS设置；</span><br><span class="line">--use-srtp=N        是否使用SRTP?  0:不使用, 1:可选, 2:强制使用 (默认:0)；</span><br><span class="line">--srtp-secure=N     SRTP 是否需要安全的SIP? 0:不需要, 1:tls方式, 2:sips (默认:1)；</span><br><span class="line">--registrar=url     设置注册服务器的URL；</span><br><span class="line">--id=url            设置本地账户的URL</span><br><span class="line">--contact=url       选择性的覆盖联系人信息</span><br><span class="line">--contact-params=S  给指定的联系URI添加S参数</span><br><span class="line">--proxy=url         可选择的访问代理服务器的URL                     </span><br><span class="line">--reg-timeout=SEC   注册时间间隔 (default 55)</span><br><span class="line">--realm=string      设置域</span><br><span class="line">--username=string   设置用户名</span><br><span class="line">--password=string   设置密码</span><br><span class="line">--publish           发PUBLISH</span><br><span class="line">--use-100rel        需要可靠的临时响应(100rel)</span><br><span class="line">--auto-update-nat=N n为0或1来启用/禁用SIP遍历后面对称NAT(默认1)</span><br><span class="line">--next-cred         添加其他凭据</span><br></pre></td></tr></table></figure>
+
+<p>SIP帐户控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--next-account      添加更多的账户</span><br></pre></td></tr></table></figure>
+
+<p>传输选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--ipv6              使用IPv6</span><br><span class="line">--local-port=port   端口</span><br><span class="line">--ip-addr=IP        ip地址</span><br><span class="line">--bound-addr=IP     绑定端口</span><br><span class="line">--no-tcp            禁用TCP传输</span><br><span class="line">--no-udp            禁用UDP传输</span><br><span class="line">--nameserver=NS     域名服务器</span><br><span class="line">--outbound=url      设置全局代理服务器的URL，可以指定多次</span><br><span class="line">--stun-srv=name     设置STUN服务器主机或域名</span><br></pre></td></tr></table></figure>
+
+<p>TLS选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--use-tls           启用TLS传输（默认不开启）</span><br><span class="line">--tls-ca-file       指定TLS CA文件（默认为无）</span><br><span class="line">--tls-cert-file     指定TLS证书文件（默认为无）</span><br><span class="line">--tls-privkey-file  指定TLS私钥文件（默认值=无）</span><br><span class="line">--tls-password      指定TLS私钥文件密码（默认为无）</span><br><span class="line">--tls-verify-server 验证服务器的证书（默认=没有）</span><br><span class="line">--tls-verify-client 验证客户端的证书（默认=没有）</span><br><span class="line">--tls-neg-timeout   指定超时（默认值无）</span><br><span class="line">--tls-srv-name      指定TLS服务器名称为多宿主服务器（可选）</span><br></pre></td></tr></table></figure>
+
+<p>媒体选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">--add-codec=name    手工添加编解码(默认开启所有)</span><br><span class="line">--dis-codec=name    禁用某个编解码</span><br><span class="line">--clock-rate=N      覆盖会议桥时钟频率</span><br><span class="line">--snd-clock-rate=N  覆盖音频设备时钟频率</span><br><span class="line">--stereo            音频设备及会议桥开通立体声模式</span><br><span class="line">--null-audio        使用NULL音频设备</span><br><span class="line">--play-file=file    在会议桥中注册WAV文件</span><br><span class="line">--play-tone=FORMAT  向会议桥注册音调，格式是&#x27;F1,F2,ON,OFF&#x27;，其中F1,F2为频率，</span><br><span class="line">        ON,OFF=on/off ,可以指定多次。</span><br><span class="line">--auto-play         自动播放文件（仅来电）</span><br><span class="line">--auto-loop         自动循环传入RTP到传出RTP</span><br><span class="line">--auto-conf         自动加入会议</span><br><span class="line">--rec-file=file     录音文件(扩展名可以使.wav 或者 .mp3）</span><br><span class="line">--auto-rec          自动记录通话</span><br><span class="line">--quality=N         指定媒介质量(0-10,默认6)</span><br><span class="line">--ptime=MSEC        覆盖编解码器ptime的毫秒的</span><br><span class="line">--no-vad            停用VAD方案/沉默探测器（默认启用VAD）</span><br><span class="line">--ec-tail=MSEC      设置回波抵消尾长度（默认值256）</span><br><span class="line">--ec-opt=OPT        选择回波抵消算法（0 =默认，1 = SPEEX，2 =抑制）</span><br><span class="line">--ilbc-mode=MODE    设置iLBC语音编解码器模式（20或30，默认是30）</span><br><span class="line">--capture-dev=id    音频捕获的设备ID（默认值= -1）</span><br><span class="line">--playback-dev=id   音频播放设备ID（默认值= -1）</span><br><span class="line">--capture-lat=N     音频捕获延迟（毫秒,默认值= 100）</span><br><span class="line">--playback-lat=N    音频播放延迟（毫秒,默认值= 100）</span><br><span class="line">--snd-auto-close=N  闲置N秒后自动关闭音频设备</span><br><span class="line">                  指定n = -1（默认）禁用此功能。</span><br><span class="line">                  指定即时关闭不使用时，N = 0。</span><br><span class="line">--no-tones          禁用听见音频</span><br><span class="line">--jb-max-size       指定最大值抖动缓冲(帧，默认= 1)</span><br></pre></td></tr></table></figure>
+
+<p>媒体传输选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">--use-ice           使用ICE（默认：不使用）</span><br><span class="line">--ice-no-host       禁用ICE主机候选（默认:no）</span><br><span class="line">--ice-no-rtcp       禁用RTCP组件（默认:no）</span><br><span class="line">--rtp-port=N        RTP尝试端口基数(默认4000)</span><br><span class="line">--rx-drop-pct=PCT   Drop PCT percent of RX RTP (for pkt lost sim, default: 0)</span><br><span class="line">--tx-drop-pct=PCT   Drop PCT percent of TX RTP (for pkt lost sim, default: 0)</span><br><span class="line">--use-turn          Enable TURN relay with ICE (default:no)</span><br><span class="line">--turn-srv          TURN服务器的域或主机名称</span><br><span class="line">--turn-tcp          使用TCP连接到TURN服务器（默认:no）</span><br><span class="line">--turn-user         TURN用户名</span><br><span class="line">--turn-passwd       TURN密码</span><br></pre></td></tr></table></figure>
+
+<p>好友名单（可以是多个）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--add-buddy url     添加指定的URL到好友列表中</span><br></pre></td></tr></table></figure>
+
+<p>用户代理选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--auto-answer=code  自动接听来电的应答代码（如200）</span><br><span class="line">--max-calls=N       最大并发呼叫数（默认：4，最大：255）</span><br><span class="line">--thread-cnt=N      工作线程数目（默认：1）</span><br><span class="line">--duration=SEC      设置最大通话时间（默认是：没有限制）</span><br><span class="line">--norefersub        转接通话时禁止事件订阅</span><br><span class="line">--use-compact-form  最小的SIP消息大小</span><br><span class="line">--no-force-lr       允许使用严格路由</span><br><span class="line">--accept-redirect=N 指定如何处理呼叫重定向响应（3XX）。</span><br><span class="line">                   0：拒绝，1：自动（默认），2：询问</span><br></pre></td></tr></table></figure>
+
+
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">lxowalle</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lxowalle.github.io/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/">https://lxowalle.github.io/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://lxowalle.github.io" target="_blank">lxowalle</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a></div><div class="post_share"><div class="social-share" data-image="https://gitee.com/liuxo/images/raw/master/blog/34.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/"><img class="prev-cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux内核学习-绪论</div></div></a></div><div class="next-post pull-right"><a href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/"><img class="next-cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">使用pjsip库-回声消除</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E6%A8%A1%E5%9D%97%E7%BC%96%E5%86%99/" title="Linux内核学习-模块编写"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054284.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-25</div><div class="title">Linux内核学习-模块编写</div></div></a></div><div><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%9B%AE%E5%BD%95/" title="Linux内核学习-目录"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-25</div><div class="title">Linux内核学习-目录</div></div></a></div><div><a href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-26</div><div class="title">Linux内核学习-绪论</div></div></a></div><div><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8/" title="Linux内核学习-编译内核"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-25</div><div class="title">Linux内核学习-编译内核</div></div></a></div><div><a href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-26</div><div class="title">使用pjsip库-回声消除</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dog.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">lxowalle</div><div class="author-info__description">靠枕</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/lxowalle"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/lxowalle" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:lxowalle@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://u.wechat.com/EAk7gmoi55GTsWcWwPHT7N0" target="_blank" title="Wechat"><i class="iconfont icon-wechat1"></i></a><a class="social-icon" href="https://wpa.qq.com/msgrd?v=3&amp;uin=1024623077&amp;site=qq&amp;menu=yes" target="_blank" title="QQ"><i class="iconfont icon-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">使用pjsip库-简介与实现语音和视频通话</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">一、简单介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-SIP%E4%BF%A1%E4%BB%A4%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 SIP信令协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-SDP%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 SDP协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">1.2.1 描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-%E8%A7%84%E8%8C%83"><span class="toc-number">1.1.2.2.</span> <span class="toc-text">1.2.2 规范</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.1.2.2.1.</span> <span class="toc-text">基本格式</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#SDP%E6%8F%8F%E8%BF%B0%E8%AF%B4%E6%98%8E"><span class="toc-number">1.1.2.2.2.</span> <span class="toc-text">SDP描述说明</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#SDP%E6%8F%8F%E8%BF%B0%E7%9A%84%E5%AE%9E%E4%BE%8B"><span class="toc-number">1.1.2.2.3.</span> <span class="toc-text">SDP描述的实例</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81pjsip%E5%BA%93"><span class="toc-number">1.2.</span> <span class="toc-text">二、pjsip库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E8%AF%91"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-pjsip%E5%BA%93%E7%9B%B8%E5%85%B3%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3%E8%8E%B7%E5%8F%96%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 pjsip库相关说明文档获取方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%BF%90%E8%A1%8C%E6%B5%8B%E8%AF%95"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 运行测试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E5%87%86%E5%A4%87SIP%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">1.2.3.1.</span> <span class="toc-text">2.2.1 准备SIP服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-pjsua%E6%B5%8B%E8%AF%95"><span class="toc-number">1.2.3.2.</span> <span class="toc-text">2.2.2 pjsua测试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-number">1.3.</span> <span class="toc-text">附录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-pjsua%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. pjsua命令使用基本用法</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/10/28/Linux%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" title="Linux随笔记录"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux随笔记录"/></a><div class="content"><a class="title" href="/2021/10/28/Linux%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" title="Linux随笔记录">Linux随笔记录</a><time datetime="2021-10-28T11:59:14.000Z" title="发表于 2021-10-28 19:59:14">2021-10-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/28/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-framebuffer%E6%93%8D%E4%BD%9C%E6%98%BE%E7%A4%BA%E5%B1%8F/" title="Linux应用编程-framebuffer操作显示屏"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054442.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux应用编程-framebuffer操作显示屏"/></a><div class="content"><a class="title" href="/2021/10/28/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-framebuffer%E6%93%8D%E4%BD%9C%E6%98%BE%E7%A4%BA%E5%B1%8F/" title="Linux应用编程-framebuffer操作显示屏">Linux应用编程-framebuffer操作显示屏</a><time datetime="2021-10-28T11:26:09.000Z" title="发表于 2021-10-28 19:26:09">2021-10-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux内核学习-绪论"/></a><div class="content"><a class="title" href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论">Linux内核学习-绪论</a><time datetime="2021-10-26T14:02:26.000Z" title="发表于 2021-10-26 22:02:26">2021-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/" title="使用pjsip库-简介与实现语音和视频通话"><img src="https://gitee.com/liuxo/images/raw/master/blog/34.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用pjsip库-简介与实现语音和视频通话"/></a><div class="content"><a class="title" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/" title="使用pjsip库-简介与实现语音和视频通话">使用pjsip库-简介与实现语音和视频通话</a><time datetime="2021-10-26T12:02:59.000Z" title="发表于 2021-10-26 20:02:59">2021-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用pjsip库-回声消除"/></a><div class="content"><a class="title" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除">使用pjsip库-回声消除</a><time datetime="2021-10-26T11:57:40.000Z" title="发表于 2021-10-26 19:57:40">2021-10-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By lxowalle</div><div class="footer_custom_text"><p><a style="margin-inline:5px"target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为 Hexo" alt="HEXO"></a><a style="margin-inline:5px"target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用 Butterfly" alt="Butterfly"></a><a style="margin-inline:5px"target="_blank" href="https://www.jsdelivr.com/"><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&logo=jsDelivr" title="本站使用 Jsdelivr 为静态资源提供CDN加速" alt="Jsdelivr"></a><a style="margin-inline:5px"target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由 GitHub 托管" alt="GitHub"></a><a style="margin-inline:5px"target="_blank"href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" alt="img" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/mouse_snow.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start -->
+  <script data-pjax src="https://cdn.jsdelivr.net/gh/Zfour/hexo-github-calendar@1.16/hexo_githubcalendar.js"></script>
+  <script data-pjax>
+        function GithubCalendarConfig(){
+            var git_githubapiurl ="https://python-github-calendar-api.vercel.app/api?lxowalle";
+            var git_color =['#e4dfd7', '#f9f4dc', '#f7e8aa', '#f7e8aa', '#f8df72', '#fcd217', '#fcc515', '#f28e16', '#fb8b05', '#d85916', '#f43e06'];
+            var git_user ="lxowalle";
+            var parent_div_git = document.getElementById('recent-posts');
+            var git_div_html = '<div class="recent-post-item" style="width:100%;height:auto;padding:10px;"><div id="github_loading" style="width:10%;height:100%;margin:0 auto;display: block"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 50 50" style="enable-background:new 0 0 50 50" xml:space="preserve"><path fill="#d0d0d0" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z" transform="rotate(275.098 25 25)"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform></path></svg></div><div id="github_container"></div></div>';
+            if(parent_div_git && location.pathname =='/'){
+                console.log('已挂载github calendar')
+                // parent_div_git.innerHTML=git_div_html+parent_div_git.innerHTML // 无报错，但不影响使用(支持pjax跳转)
+                parent_div_git.insertAdjacentHTML("afterbegin",git_div_html) // 有报错，但不影响使用(支持pjax跳转)
+            };
+            GithubCalendar(git_githubapiurl,git_color,git_user)
+        }
+        if(document.getElementById('recent-posts')){
+            GithubCalendarConfig()
+        }
+    </script>
+    <style>#github_container{min-height:280px}@media screen and (max-width:650px) {#github_container{background-image:;min-height:0px}}</style>
+    <style>undefined</style><!-- hexo injector body_end end --></body></html>

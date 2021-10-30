@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Linux内核学习-编译内核 | lxowalle</title><meta name="keywords" content="Linux"><meta name="author" content="lxowalle"><meta name="copyright" content="lxowalle"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux内核学习-编译内核一、前言​    由于没找到合适关于Linux内核学习的网络资料，现在准备通过《深入理解Linux内核》和《趣谈Linux操作系统》来学习。但是由于前者书中介绍使用的Linux Kernel是2.6.11版，所以只能现从2.6.11版开始入手。 二、编译GCC​    这一步骤是由于内核的版本太低，和我电脑的GCC不匹配导致出现了很多依赖问题，我又不愿意降低电脑默认GC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核学习-编译内核">
+<meta property="og:url" content="https://lxowalle.github.io/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8/index.html">
+<meta property="og:site_name" content="lxowalle">
+<meta property="og:description" content="Linux内核学习-编译内核一、前言​    由于没找到合适关于Linux内核学习的网络资料，现在准备通过《深入理解Linux内核》和《趣谈Linux操作系统》来学习。但是由于前者书中介绍使用的Linux Kernel是2.6.11版，所以只能现从2.6.11版开始入手。 二、编译GCC​    这一步骤是由于内核的版本太低，和我电脑的GCC不匹配导致出现了很多依赖问题，我又不愿意降低电脑默认GC">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg">
+<meta property="article:published_time" content="2021-10-25T03:23:55.000Z">
+<meta property="article:modified_time" content="2021-10-30T14:27:48.029Z">
+<meta property="article:author" content="lxowalle">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg"><link rel="shortcut icon" href="/img/dog_head.png"><link rel="canonical" href="https://lxowalle.github.io/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":false,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux内核学习-编译内核',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-10-30 22:27:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/icon.css"><link rel="stylesheet" href="/css/user.css"><meta name="generator" content="Hexo 5.4.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dog.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">lxowalle</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Linux内核学习-编译内核</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-10-25T03:23:55.000Z" title="发表于 2021-10-25 11:23:55">2021-10-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-10-30T14:27:48.029Z" title="更新于 2021-10-30 22:27:48">2021-10-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/">Linux内核学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux内核学习-编译内核"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h1 id="Linux内核学习-编译内核"><a href="#Linux内核学习-编译内核" class="headerlink" title="Linux内核学习-编译内核"></a>Linux内核学习-编译内核</h1><h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>​    由于没找到合适关于Linux内核学习的网络资料，现在准备通过《深入理解Linux内核》和《趣谈Linux操作系统》来学习。但是由于前者书中介绍使用的Linux Kernel是2.6.11版，所以只能现从2.6.11版开始入手。</p>
+<h2 id="二、编译GCC"><a href="#二、编译GCC" class="headerlink" title="二、编译GCC"></a>二、编译GCC</h2><p>​    这一步骤是由于内核的版本太低，和我电脑的GCC不匹配导致出现了很多依赖问题，我又不愿意降低电脑默认GCC版本，所以干脆另外编译一个低版本GCC来编译内核。电脑本地的GCC版本为9.3.0</p>
+<h5 id="1-获取GCC源码"><a href="#1-获取GCC源码" class="headerlink" title="1. 获取GCC源码"></a>1. 获取GCC源码</h5><p>点击<a target="_blank" rel="noopener" href="http://mirrors.concertpass.com/gcc/releases/">这里</a>获取需要的GCC版本，我选择了<a target="_blank" rel="noopener" href="https://ftp.gnu.org/gnu/gcc/gcc-4.6.2/gcc-4.6.2.tar.bz2">GCC 2.6.2</a></p>
+<h5 id="2-解压"><a href="#2-解压" class="headerlink" title="2. 解压"></a>2. 解压</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xf gcc-4.6.2.tar.bz2 </span><br></pre></td></tr></table></figure>
+
+<h5 id="3-配置编译环境"><a href="#3-配置编译环境" class="headerlink" title="3. 配置编译环境"></a>3. 配置编译环境</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd gcc-4.6.2</span><br><span class="line">./contrib/download_prerequisites 			# 安装依赖（mpc,mpfr,gmp）</span><br><span class="line">./configure --prefix=/usr/local/gcc-4.6.2	# 这里让GCC安装到指定目录</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-编译和安装"><a href="#4-编译和安装" class="headerlink" title="4. 编译和安装"></a>4. 编译和安装</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make -j8</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p><strong>出现错误：</strong></p>
+<p>问题1：提示linux-unwind.h文件中的字段‘info’的类型不完全,字段‘uc’的类型不完全</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 通过命令`find . name &quot;linux-unwind.h&quot;`查询该文件路径</span><br><span class="line">2. 将报错位置的struct siginfo替换为siginfo_t</span><br><span class="line">3. 将报错位置的struct ucontext替换为ucontext_t</span><br></pre></td></tr></table></figure>
+
+<p>问题2：error ：dereferencing pointer to incomplete type</p>
+<p>解决方法:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">原理同问题1，找到错误的结构体并修改</span><br></pre></td></tr></table></figure>
+
+<p>问题3：找不到 crti.o: 没有那个文件或目录</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. 通过命令`find /usr -name &quot;crti*&quot;`找到crti.o的路径，并添加路径到环境变量LIBRARY_PATHZHONG</span><br><span class="line">2. export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu	</span><br><span class="line"></span><br><span class="line">需要注意：LIBRARY_PATH不能有空元素(例如符号:后面为空)，否则编译器可能会报错</span><br></pre></td></tr></table></figure>
+
+<p>问题4：error： 对不完全的类型‘struct _Jv_catch_fpe(int, siginfo_t*, void*)::ucontext’的非法使用</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">同问题1，我干脆把GCC源码所有的struct siginfo替换为siginfo_t，所有的struct ucontext替换为ucontext_t</span><br></pre></td></tr></table></figure>
+
+<p>问题5：undefined reference to `__cxa_call_unexpected’</p>
+<p>解决方法：</p>
+<blockquote>
+<p>需要替换/gcc-4.6.2/libjava目录下的prims.cc文件</p>
+</blockquote>
+<p>需要替换的prims.cc内容在<a target="_blank" rel="noopener" href="https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=libjava/prims.cc;hb=b33ddba240f10fbabd5e8ce12bb95038f0650886">这里</a>复制</p>
+<p>问题6：</p>
+<p>make[6]: 进入目录“/home/liuxo/third_party/gcc-4.6.2/x86_64-unknown-linux-gnu/32/libjava/libltdl”<br>make[6]: *** 没有规则可制作目标“x86_64-unknown-linux-gnu/libgfortran/libgfortran.la”，由“all-am” 需求。 停止。</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">前面的步骤导致中间文件影响的编译，重新编译</span><br><span class="line">1. 执行命令：cd gcc-4.6.2</span><br><span class="line">2. 执行命令：./contrib/download_prerequisites 			# 安装依赖（mpc,mpfr,gmp）</span><br><span class="line">3. 执行命令：./configure --prefix=/usr/local/gcc-4.6.2	# 这里让GCC安装到指定目录</span><br><span class="line">4. 替换/gcc-4.6.2/libjava目录下的prims.cc文件		# 参考问题5</span><br><span class="line">5. 执行命令：export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu</span><br><span class="line">6. 把GCC源码所有的struct siginfo替换为siginfo_t，所有的struct ucontext替换为ucontext_t</span><br><span class="line">7. make -j8</span><br><span class="line">8. 编译一路畅通直到完成</span><br></pre></td></tr></table></figure>
+
+<h5 id="5-安装（可选）"><a href="#5-安装（可选）" class="headerlink" title="5. 安装（可选）"></a>5. 安装（可选）</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make check</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>问题7：error: relink `libgfortran.la’ with the above command before installing it</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">按照问题7解决</span><br></pre></td></tr></table></figure>
+
+<p>问题8：autogen：未找到命令（该问题是执行make check出现）</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install autoconf automake libtool autogen</span><br></pre></td></tr></table></figure>
+
+<p>问题9：runtest: 未找到命令（该问题是执行make check出现）</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install dejagnu </span><br></pre></td></tr></table></figure>
+
+<p>问题8参考自<a target="_blank" rel="noopener" href="https://command-not-found.com/runtest">这里</a></p>
+<h2 id="二、编译Kernel-2-6-11内核"><a href="#二、编译Kernel-2-6-11内核" class="headerlink" title="二、编译Kernel 2.6.11内核"></a>二、编译Kernel 2.6.11内核</h2><h5 id="1-下载内核"><a href="#1-下载内核" class="headerlink" title="1. 下载内核"></a>1. 下载内核</h5><p>​    点击<a target="_blank" rel="noopener" href="https://cdn.kernel.org/pub/linux/kernel/v2.6/linux-2.6.11.1.tar.bz2">这里</a>下载内核2.6.11版</p>
+<h5 id="2-解压缩"><a href="#2-解压缩" class="headerlink" title="2. 解压缩"></a>2. 解压缩</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf linux-2.6.12.1.tar.bz2</span><br></pre></td></tr></table></figure>
+
+<p>注意不能解压到<code>/usr/local/linux</code>，这个目录会被自己电脑使用。</p>
+<h5 id="3-验证签名和打补丁"><a href="#3-验证签名和打补丁" class="headerlink" title="3. 验证签名和打补丁"></a>3. 验证签名和打补丁</h5><p>​    没有验证，可以参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/papam/archive/2009/08/31/1557563.html">这里</a></p>
+<h5 id="4-配置内核"><a href="#4-配置内核" class="headerlink" title="4. 配置内核"></a>4. 配置内核</h5><p>​    使用menuconfig来配置内核，输入命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make menuconfig</span><br></pre></td></tr></table></figure>
+
+<p>关于内核配置的相关命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">make oldconfig		: 基于已有的.config进行配置, 若有新的符号, 它将询问用户.</span><br><span class="line">make defconfig		: 按默认选项对内核进行配置(386的默认配置是Linus做的).</span><br><span class="line">make allnoconfig	: 除必须的选项外, 其它选项一律不选. (常用于嵌入式系统).</span><br><span class="line">make clean			: 删除生成的目标文件, 往往用它来实现对驱动的重新编译.</span><br><span class="line">make mrproper 		: 删除包括.config在内的生成的目标文件.</span><br></pre></td></tr></table></figure>
+
+<p>Tips:</p>
+<ul>
+<li><p>缺少依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install libncurses-dev flex bison</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="5-配置"><a href="#5-配置" class="headerlink" title="5. 配置"></a>5. 配置</h5><p>​    在工程根目录下的Makefile中可以修改内核版本，一般修改EXTRAVERSION宏</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">VERSION = 2					# 内核主版本号</span><br><span class="line">PATCHLEVEL = 6				# 内核次版本号</span><br><span class="line">SUBLEVEL = 12				# 内核子版本号</span><br><span class="line">EXTRAVERSION = .1			# 额外版本号</span><br></pre></td></tr></table></figure>
+
+<h5 id="6-编译"><a href="#6-编译" class="headerlink" title="6. 编译"></a>6. 编译</h5><p>​    配置完成，开始编译</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 方法1</span><br><span class="line">make -jN					# N表示使用的CPU个数</span><br><span class="line"># 方法2</span><br><span class="line">make -jN &gt; /dev/null		# 此时不会有编译信息，但是能看到Error和Warning</span><br></pre></td></tr></table></figure>
+
+<p>Tips:</p>
+<ul>
+<li><p>缺少依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install libelf-dev</span><br></pre></td></tr></table></figure></li>
+<li><p>出现错误<code>code model kernel does not support PIC mode</code></p>
+<blockquote>
+<p>由于gcc 6+版本在默认情况启用了PIE，gcc 5.0也可能会出错。需要手动禁用这个功能。</p>
+</blockquote>
+</li>
+</ul>
+<p>参考文档：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/papam/archive/2009/08/31/1557563.html">编译Linux2.6 内核总结</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">lxowalle</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lxowalle.github.io/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8/">https://lxowalle.github.io/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://lxowalle.github.io" target="_blank">lxowalle</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a></div><div class="post_share"><div class="social-share" data-image="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E6%A8%A1%E5%9D%97%E7%BC%96%E5%86%99/"><img class="prev-cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054284.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux内核学习-模块编写</div></div></a></div><div class="next-post pull-right"><a href="/2021/10/21/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AF%84%E4%BB%B7%E5%8F%82%E6%95%B0/"><img class="next-cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">人脸识别的一些评价参数</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E6%A8%A1%E5%9D%97%E7%BC%96%E5%86%99/" title="Linux内核学习-模块编写"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054284.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-25</div><div class="title">Linux内核学习-模块编写</div></div></a></div><div><a href="/2021/10/25/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%9B%AE%E5%BD%95/" title="Linux内核学习-目录"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-25</div><div class="title">Linux内核学习-目录</div></div></a></div><div><a href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-26</div><div class="title">Linux内核学习-绪论</div></div></a></div><div><a href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-26</div><div class="title">使用pjsip库-回声消除</div></div></a></div><div><a href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/" title="使用pjsip库-简介与实现语音和视频通话"><img class="cover" src="https://gitee.com/liuxo/images/raw/master/blog/34.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-26</div><div class="title">使用pjsip库-简介与实现语音和视频通话</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dog.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">lxowalle</div><div class="author-info__description">靠枕</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/lxowalle"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/lxowalle" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:lxowalle@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://u.wechat.com/EAk7gmoi55GTsWcWwPHT7N0" target="_blank" title="Wechat"><i class="iconfont icon-wechat1"></i></a><a class="social-icon" href="https://wpa.qq.com/msgrd?v=3&amp;uin=1024623077&amp;site=qq&amp;menu=yes" target="_blank" title="QQ"><i class="iconfont icon-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8"><span class="toc-number">1.</span> <span class="toc-text">Linux内核学习-编译内核</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%89%8D%E8%A8%80"><span class="toc-number">1.1.</span> <span class="toc-text">一、前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91GCC"><span class="toc-number">1.2.</span> <span class="toc-text">二、编译GCC</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E8%8E%B7%E5%8F%96GCC%E6%BA%90%E7%A0%81"><span class="toc-number">1.2.0.0.1.</span> <span class="toc-text">1. 获取GCC源码</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E8%A7%A3%E5%8E%8B"><span class="toc-number">1.2.0.0.2.</span> <span class="toc-text">2. 解压</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E9%85%8D%E7%BD%AE%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83"><span class="toc-number">1.2.0.0.3.</span> <span class="toc-text">3. 配置编译环境</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E7%BC%96%E8%AF%91%E5%92%8C%E5%AE%89%E8%A3%85"><span class="toc-number">1.2.0.0.4.</span> <span class="toc-text">4. 编译和安装</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E5%AE%89%E8%A3%85%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="toc-number">1.2.0.0.5.</span> <span class="toc-text">5. 安装（可选）</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91Kernel-2-6-11%E5%86%85%E6%A0%B8"><span class="toc-number">1.3.</span> <span class="toc-text">二、编译Kernel 2.6.11内核</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E4%B8%8B%E8%BD%BD%E5%86%85%E6%A0%B8"><span class="toc-number">1.3.0.0.1.</span> <span class="toc-text">1. 下载内核</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E8%A7%A3%E5%8E%8B%E7%BC%A9"><span class="toc-number">1.3.0.0.2.</span> <span class="toc-text">2. 解压缩</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E9%AA%8C%E8%AF%81%E7%AD%BE%E5%90%8D%E5%92%8C%E6%89%93%E8%A1%A5%E4%B8%81"><span class="toc-number">1.3.0.0.3.</span> <span class="toc-text">3. 验证签名和打补丁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E9%85%8D%E7%BD%AE%E5%86%85%E6%A0%B8"><span class="toc-number">1.3.0.0.4.</span> <span class="toc-text">4. 配置内核</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E9%85%8D%E7%BD%AE"><span class="toc-number">1.3.0.0.5.</span> <span class="toc-text">5. 配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-%E7%BC%96%E8%AF%91"><span class="toc-number">1.3.0.0.6.</span> <span class="toc-text">6. 编译</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/10/28/Linux%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" title="Linux随笔记录"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux随笔记录"/></a><div class="content"><a class="title" href="/2021/10/28/Linux%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" title="Linux随笔记录">Linux随笔记录</a><time datetime="2021-10-28T11:59:14.000Z" title="发表于 2021-10-28 19:59:14">2021-10-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/28/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-framebuffer%E6%93%8D%E4%BD%9C%E6%98%BE%E7%A4%BA%E5%B1%8F/" title="Linux应用编程-framebuffer操作显示屏"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054442.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux应用编程-framebuffer操作显示屏"/></a><div class="content"><a class="title" href="/2021/10/28/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-framebuffer%E6%93%8D%E4%BD%9C%E6%98%BE%E7%A4%BA%E5%B1%8F/" title="Linux应用编程-framebuffer操作显示屏">Linux应用编程-framebuffer操作显示屏</a><time datetime="2021-10-28T11:26:09.000Z" title="发表于 2021-10-28 19:26:09">2021-10-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux内核学习-绪论"/></a><div class="content"><a class="title" href="/2021/10/26/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BB%AA%E8%AE%BA/" title="Linux内核学习-绪论">Linux内核学习-绪论</a><time datetime="2021-10-26T14:02:26.000Z" title="发表于 2021-10-26 22:02:26">2021-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/" title="使用pjsip库-简介与实现语音和视频通话"><img src="https://gitee.com/liuxo/images/raw/master/blog/34.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用pjsip库-简介与实现语音和视频通话"/></a><div class="content"><a class="title" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%9E%E7%8E%B0%E8%AF%AD%E9%9F%B3%E5%92%8C%E8%A7%86%E9%A2%91%E9%80%9A%E8%AF%9D/" title="使用pjsip库-简介与实现语音和视频通话">使用pjsip库-简介与实现语音和视频通话</a><time datetime="2021-10-26T12:02:59.000Z" title="发表于 2021-10-26 20:02:59">2021-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用pjsip库-回声消除"/></a><div class="content"><a class="title" href="/2021/10/26/%E4%BD%BF%E7%94%A8pjsip%E5%BA%93-%E5%9B%9E%E5%A3%B0%E6%B6%88%E9%99%A4/" title="使用pjsip库-回声消除">使用pjsip库-回声消除</a><time datetime="2021-10-26T11:57:40.000Z" title="发表于 2021-10-26 19:57:40">2021-10-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By lxowalle</div><div class="footer_custom_text"><p><a style="margin-inline:5px"target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为 Hexo" alt="HEXO"></a><a style="margin-inline:5px"target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用 Butterfly" alt="Butterfly"></a><a style="margin-inline:5px"target="_blank" href="https://www.jsdelivr.com/"><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&logo=jsDelivr" title="本站使用 Jsdelivr 为静态资源提供CDN加速" alt="Jsdelivr"></a><a style="margin-inline:5px"target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由 GitHub 托管" alt="GitHub"></a><a style="margin-inline:5px"target="_blank"href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" alt="img" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/mouse_snow.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start -->
+  <script data-pjax src="https://cdn.jsdelivr.net/gh/Zfour/hexo-github-calendar@1.16/hexo_githubcalendar.js"></script>
+  <script data-pjax>
+        function GithubCalendarConfig(){
+            var git_githubapiurl ="https://python-github-calendar-api.vercel.app/api?lxowalle";
+            var git_color =['#e4dfd7', '#f9f4dc', '#f7e8aa', '#f7e8aa', '#f8df72', '#fcd217', '#fcc515', '#f28e16', '#fb8b05', '#d85916', '#f43e06'];
+            var git_user ="lxowalle";
+            var parent_div_git = document.getElementById('recent-posts');
+            var git_div_html = '<div class="recent-post-item" style="width:100%;height:auto;padding:10px;"><div id="github_loading" style="width:10%;height:100%;margin:0 auto;display: block"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 50 50" style="enable-background:new 0 0 50 50" xml:space="preserve"><path fill="#d0d0d0" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z" transform="rotate(275.098 25 25)"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform></path></svg></div><div id="github_container"></div></div>';
+            if(parent_div_git && location.pathname =='/'){
+                console.log('已挂载github calendar')
+                // parent_div_git.innerHTML=git_div_html+parent_div_git.innerHTML // 无报错，但不影响使用(支持pjax跳转)
+                parent_div_git.insertAdjacentHTML("afterbegin",git_div_html) // 有报错，但不影响使用(支持pjax跳转)
+            };
+            GithubCalendar(git_githubapiurl,git_color,git_user)
+        }
+        if(document.getElementById('recent-posts')){
+            GithubCalendarConfig()
+        }
+    </script>
+    <style>#github_container{min-height:280px}@media screen and (max-width:650px) {#github_container{background-image:;min-height:0px}}</style>
+    <style>undefined</style><!-- hexo injector body_end end --></body></html>
