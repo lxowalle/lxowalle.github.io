@@ -90,4 +90,162 @@ NULL 与没有数据是不一样的，它代表着未知的数据
 
 [这里](https://developer.51cto.com/art/202009/627136.htm)
 
+### 2.1 创建数据库
+   创建一个数据库，直接调用sqlite提供的API创建。
+```c
+/**
+ * @brief 创建数据库
+ * @return
+*/
+int mf_sqlite_create_database(char *filename, sqlite3 **ppDb)
+{
+    if (filename == NULL || ppDb == NULL)
+        return -1;
+
+    int res = -1;
+
+    /* 初始化数据库 */
+    res = sqlite3_open(filename, ppDb);
+    if (res)
+    {
+        printf("Can't open database:%s\n", sqlite3_errmsg(*ppDb));
+        sqlite3_close(*ppDb);
+        return -1;
+    }
+
+    return 0;
+}
+```
+
+### 2.2 创建一张表
+   
+通过指令`CREATE TABLE IF NOT EXISTS table_name(table_member);`来创建表，其中`IF NOT EXISTS`表示表不存在时才创建，table_name表示新建表的名字，table_member表示新建表的字段类型和约束条件。
+
+参考：
+```
+CREATE TABLE IF NOT EXISTS table_name(
+   key BLOB NOT NULL,
+   uid BLOB NOT NULL);
+```
+
+C代码：
+```c
+/**
+ * @brief 创建一张表
+ * @details
+ * "key BLOB NOT NULL,uid BLOB NOT NULL"
+ * @return
+*/
+int mf_sqlite_create_table(sqlite3 *database, char *table_name, char *member)
+{
+   if (database == NULL || table_name == NULL || member == NULL)
+      return -1;
+
+   sqlite3 *db = (sqlite3 *)database;
+   char *err_msg = NULL;
+   int ret = -1;
+   char sql[256] = {0};
+
+   /* 填充sql语句 */
+   int len = snprintf(sql, sizeof(sql), "CREATE TABLE IF NOT EXISTS %s(%s);", table_name, member);
+   if (len >= sizeof(sql)) return -1;
+
+   /* 执行sql语句 */
+   ret = sqlite3_exec(db, sql, NULL, 0, NULL);
+   if (ret != SQLITE_OK)
+   {
+      fprintf(stderr, "DB error: %s %d\n", err_msg, ret);
+      sqlite3_free(err_msg);
+      return -1;
+   }
+
+   return 0;
+}
+```
+
+### 2.3 删除一张表
+通过指令`DROP TABLE table_name;`来删除表。
+
+参考：
+```
+CREATE TABLE table_name;
+```
+
+C代码：
+```c
+int mf_sqlite_delete_table(sqlite3 *database, char *table_name)
+{
+   if (database == NULL || table_name == NULL)
+      return -1;
+
+   sqlite3 *db = (sqlite3 *)database;
+   char *err_msg = NULL;
+   int ret = -1;
+   char sql[256] = {0};
+
+   /* 填充sql语句 */
+   int len = snprintf(sql, sizeof(sql), "DROP TABLE %s;", table_name);
+   if (len >= sizeof(sql)) return -1;
+   
+   /* 执行sql语句 */
+   ret = sqlite3_exec(db, sql, NULL, 0, NULL);
+   if (ret != SQLITE_OK)
+   {
+      fprintf(stderr, "DB error: %s %d\n", err_msg, ret);
+      sqlite3_free(err_msg);
+      return -1;
+   }
+
+   return 0;
+}
+```
+
+### 2.4 查询一张表是否存在
+通过指令`SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'table_name';`来查看sqlite_master表中是否有目标表的信息。其中sqlite_master是数据库默认存在的表，用来保存用户的信息。table_name是需要查询的表的名字。
+
+参考：
+```
+SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'table_name';
+```
+
+```c
+/**
+ * @brief 查看表是否存在
+ * @return 返回表的数量
+*/
+int mf_sqlite_check_table(sqlite3 *database, char *table_name)
+{
+   if (database == NULL || table_name == NULL)
+      return -1;
+
+   sqlite3 *db = (sqlite3 *)database;
+   sqlite3_stmt *stmt = NULL;
+   int ret = -1, count = 0;
+   char sql[256] = {0};
+
+   /* 填充sql语句 */
+   int len = snprintf(sql, sizeof(sql), "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = '%s';", table_name);
+   if (len >= sizeof(sql)) return -1;
+
+   /* 将sql语句转换为二进制语句 */
+   ret = sqlite3_prepare_v2(db, sql, strlen(sql), &stmt, NULL);
+   if (ret != SQLITE_OK)
+   {
+      fprintf(stderr, "DB perpare error: %d\n", ret);
+      return -1;
+   }
+
+   /* 执行二进制sql语句，并获取返回值 */
+   while (sqlite3_step(stmt) == SQLITE_ROW)
+   {
+      count = sqlite3_column_int(stmt, 0);
+   }
+
+   /* 释放二进制sql语句的资源 */
+   sqlite3_finalize(stmt);
+
+   return count;
+}
+```
+
 累了累了,待补..
