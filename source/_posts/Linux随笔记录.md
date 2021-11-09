@@ -1,7 +1,7 @@
 ---
 title: Linux随笔记录
 date: 2021-10-28 19:59:14
-tags:
+tags: Linux
 ---
 
 # Linux随笔记录

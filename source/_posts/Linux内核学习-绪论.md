@@ -1,7 +1,7 @@
 ---
 title: Linux内核学习-绪论
 date: 2021-10-26 22:02:26
-tag: Linux
+tags: Linux
 categories: Linux内核学习
 ---
 
