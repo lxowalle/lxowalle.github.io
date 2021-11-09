@@ -1,7 +1,7 @@
 ---
 title: Linux应用编程-framebuffer操作显示屏
 date: 2021-10-28 19:26:09
-tags:
+tags: Linux
 ---
 
 # Linux应用编程-framebuffer操作显示屏
