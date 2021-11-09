@@ -1,7 +1,7 @@
 ---
 title: Linux应用编程-使用i2c-tools工具测试i2c
 date: 2021-11-05 19:23:57
-tags:
+tags: Linux
 ---
 
 # Linux应用编程-使用i2c-tools工具测试i2c
