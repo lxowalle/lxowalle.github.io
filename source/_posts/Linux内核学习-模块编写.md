@@ -1,7 +1,7 @@
 ---
 title: Linux内核学习-模块编写
 date: 2021-10-25 11:23:55
-tag: Linux
+tags: Linux
 categories: Linux内核学习
 ---
 
