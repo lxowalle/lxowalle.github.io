@@ -45,6 +45,15 @@ tags: Linux
 
 #### cp命令
 
-1. 复制时如果需要保留软链接，则添加-d选项
+1. 复制时如果需要保留软链接，则添加-
+
+#### 修改子仓库的地址
+
+```
+1. 直接在.gitmodules修改子仓库路径
+2. 执行git submodule sync同步修改
+3. 执行git submodule foreach -q git config remote.origin.url查看子仓库实际路径
+4. 更新子仓库git submodule update --remote
+```
 
    
