@@ -1,0 +1,223 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Linux内核学习-编译运行内核4.9 | lxowalle</title><meta name="keywords" content="个人"><meta name="author" content="lxowalle"><meta name="copyright" content="lxowalle"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux内核学习-编译运行内核4.9一、 配置和编译Linux内核4.9在这里下载Linux内核，下面内核版本为4.9.229 本地编译(x86)： 12345678910111213tar -xvf linux-4.9.229.tar.gzcd linux-4.9.229export ARCH&#x3D;x86make x86_64_defconfigmake menuconfig# menuconfi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核学习-编译运行内核4.9">
+<meta property="og:url" content="https://lxowalle.github.io/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/index.html">
+<meta property="og:site_name" content="lxowalle">
+<meta property="og:description" content="Linux内核学习-编译运行内核4.9一、 配置和编译Linux内核4.9在这里下载Linux内核，下面内核版本为4.9.229 本地编译(x86)： 12345678910111213tar -xvf linux-4.9.229.tar.gzcd linux-4.9.229export ARCH&#x3D;x86make x86_64_defconfigmake menuconfig# menuconfi">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg">
+<meta property="article:published_time" content="2021-11-13T06:36:28.000Z">
+<meta property="article:modified_time" content="2021-11-13T10:04:41.231Z">
+<meta property="article:author" content="lxowalle">
+<meta property="article:tag" content="个人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg"><link rel="shortcut icon" href="/img/dog_head.png"><link rel="canonical" href="https://lxowalle.github.io/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":false,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux内核学习-编译运行内核4.9',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-11-13 18:04:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/icon.css"><link rel="stylesheet" href="/css/user.css"><meta name="generator" content="Hexo 5.4.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dog.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">lxowalle</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Linux内核学习-编译运行内核4.9</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-11-13T06:36:28.000Z" title="发表于 2021-11-13 14:36:28">2021-11-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-11-13T10:04:41.231Z" title="更新于 2021-11-13 18:04:41">2021-11-13</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux内核学习-编译运行内核4.9"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h1 id="Linux内核学习-编译运行内核4-9"><a href="#Linux内核学习-编译运行内核4-9" class="headerlink" title="Linux内核学习-编译运行内核4.9"></a>Linux内核学习-编译运行内核4.9</h1><h2 id="一、-配置和编译Linux内核4-9"><a href="#一、-配置和编译Linux内核4-9" class="headerlink" title="一、 配置和编译Linux内核4.9"></a>一、 配置和编译Linux内核4.9</h2><p>在<a target="_blank" rel="noopener" href="https://mirrors.edge.kernel.org/pub/linux/kernel/">这里</a>下载Linux内核，下面内核版本为4.9.229</p>
+<p>本地编译(x86)：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf linux-4.9.229.tar.gz</span><br><span class="line">cd linux-4.9.229</span><br><span class="line">export ARCH=x86</span><br><span class="line">make x86_64_defconfig</span><br><span class="line">make menuconfig</span><br><span class="line"><span class="meta">#</span><span class="bash"> menuconfig 配置内容</span></span><br><span class="line">General setip-&gt;</span><br><span class="line">	[*]Initial RAM filesystem and RAM disk (initramfs/initrd) support</span><br><span class="line">Device Drivers-&gt;</span><br><span class="line">	[*]Block devices ---&gt;</span><br><span class="line">          (16)    Default number of RAM disks                                       		(65536) Default RAM disk size (kbytes) </span><br><span class="line"><span class="meta">#</span><span class="bash"> end</span></span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p>编译完成后，可以在<code>linux-4.9.229/arch/x86_64/boot</code>目录下看到编译好的内核文件bzImage</p>
+<h2 id="二、配置和编译busybox"><a href="#二、配置和编译busybox" class="headerlink" title="二、配置和编译busybox"></a>二、配置和编译busybox</h2><p>在<a target="_blank" rel="noopener" href="https://busybox.net/downloads/">这里</a>下载busybox，下面的busybox版本为1.34.1</p>
+<p>编译安装:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf busybox-1.34.1.tar.bz2</span><br><span class="line">cd busybox-1.34.1</span><br><span class="line">make menuconfig</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>编译、安装完成后，可以在<code>busybox-1.34.1/_install</code>目录下看到安装结果</p>
+<p>配置：</p>
+<p>下面的操作都是基于_install目录下完成</p>
+<ol>
+<li><p>创建自定义的目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir etc dev mnt proc sys tmp		# 创建配置目录、设备目录、挂载目录、</span><br><span class="line">mkdir -p etc/init.d/				# 创建初始化配置目录</span><br></pre></td></tr></table></figure></li>
+<li><p>创建自定义配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vim etc/fstab</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 内容</span></span><br><span class="line">proc        /proc           proc         defaults        0        0</span><br><span class="line">tmpfs       /tmp            tmpfs    　　defaults        0        0</span><br><span class="line">sysfs       /sys            sysfs        defaults        0        0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">vim etc/init.d/rcS</span><br><span class="line">chmod 755 etc/init.d/rcS</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 内容</span></span><br><span class="line">echo -e &quot;Welcome to tinyLinux&quot;</span><br><span class="line">/bin/mount -a</span><br><span class="line">echo -e &quot;Remounting the root filesystem&quot;</span><br><span class="line">mount  -o  remount,rw  /</span><br><span class="line">mkdir -p /dev/pts</span><br><span class="line">mount -t devpts devpts /dev/pts</span><br><span class="line">echo /sbin/mdev &gt; /proc/sys/kernel/hotplug</span><br><span class="line">mdev -s</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vim etc/inittab</span><br><span class="line">chmod 755 etc/inittab</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 内容</span></span><br><span class="line">::sysinit:/etc/init.d/rcS</span><br><span class="line">::respawn:-/bin/sh</span><br><span class="line">::askfirst:-/bin/sh</span><br><span class="line">::ctrlaltdel:/bin/umount -a -r</span><br></pre></td></tr></table></figure></li>
+<li><p>创建设备文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd dev</span><br><span class="line">sudo mknod console c 5 1		# c表示字符设备，5是主设备号，1是次设备号</span><br><span class="line">sudo mknod null c 1 3</span><br><span class="line">sudo mknod tty1 c 4 1</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>编写脚本来打包根文件系统：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">vim create_rootfs.sh</span><br><span class="line">chmod +x create_rootfs.sh</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 内容</span></span><br><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">rm -rf rootfs.ext3</span><br><span class="line">rm -rf fs</span><br><span class="line">dd if=/dev/zero of=./rootfs.ext3 bs=1M count=32</span><br><span class="line">mkfs.ext3 rootfs.ext3</span><br><span class="line">mkdir fs</span><br><span class="line">mount -o loop rootfs.ext3 ./fs</span><br><span class="line">cp -rf ./_install/* ./fs</span><br><span class="line">umount ./fs</span><br><span class="line">gzip --best -c rootfs.ext3 &gt; rootfs.img.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、安装qemu"><a href="#三、安装qemu" class="headerlink" title="三、安装qemu"></a>三、安装qemu</h2><p>qemu的安装方法和地址点<a target="_blank" rel="noopener" href="https://www.qemu.org/download/">这里</a>:</p>
+<p>安装依赖库：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ninja-build libglib2.0-dev build-essential zlib1g-dev pkg-config libpixman-1-dev libsdl1.2-dev libsdl2-dev</span><br></pre></td></tr></table></figure>
+
+<p>编译安装方法1：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.qemu.org/qemu-6.1.0.tar.xz</span><br><span class="line">tar xvJf qemu-6.1.0.tar.xz</span><br><span class="line">cd qemu-6.1.0</span><br><span class="line">sudo ./configure --enable_sdl</span><br><span class="line">sudo make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>编译安装方法2：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://gitlab.com/qemu-project/qemu.git</span><br><span class="line">cd qemu</span><br><span class="line">git submodule init</span><br><span class="line">git submodule update --recursive</span><br><span class="line">sudo ./configure --enable_sdl</span><br><span class="line">sudo make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、运行内核"><a href="#四、运行内核" class="headerlink" title="四、运行内核"></a>四、运行内核</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 \</span><br><span class="line">-kernel linux-4.9.229/arch/x86_64/boot/bzImage \</span><br><span class="line">-initrd busybox-1.34.1/rootfs.img.gz \</span><br><span class="line">-append &quot;root=/dev/ram init=/linuxrc&quot; \</span><br><span class="line">-serial file:output.txt</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在qemu中弹出鼠标的快捷键：Ctrl+Alt+G</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol>
+<li><p>内核启动后报错</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kernel panic - not syncing: VFS: unable to mount root fs on unknown block</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>参考文章:</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36393978/article/details/118086216">Ubuntu20.04编译安装qemu6.0</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/read/cv7118525">带你阅读linux内核源码：下载源码、编译内核并运行一个最小系统</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36393978/article/details/118353939">qemu运行虚拟机无反应，只输出一行提示信息:VNC server running on 127.0.0.1:5900</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">lxowalle</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lxowalle.github.io/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/">https://lxowalle.github.io/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://lxowalle.github.io" target="_blank">lxowalle</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/11/12/C%E8%AF%AD%E8%A8%80-%E5%8F%8D%E6%B1%87%E7%BC%96/"><img class="next-cover" src="https://gitee.com/liuxo/images/raw/master/blog/202110252054599.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">C语言-反汇编</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dog.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">lxowalle</div><div class="author-info__description">靠枕</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/lxowalle"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/lxowalle" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:lxowalle@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://u.wechat.com/EAk7gmoi55GTsWcWwPHT7N0" target="_blank" title="Wechat"><i class="iconfont icon-wechat1"></i></a><a class="social-icon" href="https://wpa.qq.com/msgrd?v=3&amp;uin=1024623077&amp;site=qq&amp;menu=yes" target="_blank" title="QQ"><i class="iconfont icon-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9"><span class="toc-number">1.</span> <span class="toc-text">Linux内核学习-编译运行内核4.9</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81-%E9%85%8D%E7%BD%AE%E5%92%8C%E7%BC%96%E8%AF%91Linux%E5%86%85%E6%A0%B84-9"><span class="toc-number">1.1.</span> <span class="toc-text">一、 配置和编译Linux内核4.9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%85%8D%E7%BD%AE%E5%92%8C%E7%BC%96%E8%AF%91busybox"><span class="toc-number">1.2.</span> <span class="toc-text">二、配置和编译busybox</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%AE%89%E8%A3%85qemu"><span class="toc-number">1.3.</span> <span class="toc-text">三、安装qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B8"><span class="toc-number">1.4.</span> <span class="toc-text">四、运行内核</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-number">1.5.</span> <span class="toc-text">问题</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/" title="Linux内核学习-编译运行内核4.9"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux内核学习-编译运行内核4.9"/></a><div class="content"><a class="title" href="/2021/11/13/Linux%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B84-9/" title="Linux内核学习-编译运行内核4.9">Linux内核学习-编译运行内核4.9</a><time datetime="2021-11-13T06:36:28.000Z" title="发表于 2021-11-13 14:36:28">2021-11-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/12/C%E8%AF%AD%E8%A8%80-%E5%8F%8D%E6%B1%87%E7%BC%96/" title="C语言-反汇编"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054599.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C语言-反汇编"/></a><div class="content"><a class="title" href="/2021/11/12/C%E8%AF%AD%E8%A8%80-%E5%8F%8D%E6%B1%87%E7%BC%96/" title="C语言-反汇编">C语言-反汇编</a><time datetime="2021-11-12T12:01:23.000Z" title="发表于 2021-11-12 20:01:23">2021-11-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/11/C%E8%AF%AD%E8%A8%80-ELF%E6%96%87%E4%BB%B6/" title="C语言-ELF文件"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C语言-ELF文件"/></a><div class="content"><a class="title" href="/2021/11/11/C%E8%AF%AD%E8%A8%80-ELF%E6%96%87%E4%BB%B6/" title="C语言-ELF文件">C语言-ELF文件</a><time datetime="2021-11-11T12:36:31.000Z" title="发表于 2021-11-11 20:36:31">2021-11-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/10/C%E8%AF%AD%E8%A8%80-%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0%E5%BA%94%E7%94%A8/" title="C语言-可变参数应用"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054488.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C语言-可变参数应用"/></a><div class="content"><a class="title" href="/2021/11/10/C%E8%AF%AD%E8%A8%80-%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0%E5%BA%94%E7%94%A8/" title="C语言-可变参数应用">C语言-可变参数应用</a><time datetime="2021-11-10T12:24:28.000Z" title="发表于 2021-11-10 20:24:28">2021-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/10/LVGL%E7%94%9F%E6%88%90%E5%92%8C%E6%9B%B4%E6%8D%A2%E5%AD%97%E4%BD%93/" title="LVGL生成和更换字体"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LVGL生成和更换字体"/></a><div class="content"><a class="title" href="/2021/11/10/LVGL%E7%94%9F%E6%88%90%E5%92%8C%E6%9B%B4%E6%8D%A2%E5%AD%97%E4%BD%93/" title="LVGL生成和更换字体">LVGL生成和更换字体</a><time datetime="2021-11-10T12:05:11.000Z" title="发表于 2021-11-10 20:05:11">2021-11-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By lxowalle</div><div class="footer_custom_text"><p><a style="margin-inline:5px"target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为 Hexo" alt="HEXO"></a><a style="margin-inline:5px"target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用 Butterfly" alt="Butterfly"></a><a style="margin-inline:5px"target="_blank" href="https://www.jsdelivr.com/"><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&logo=jsDelivr" title="本站使用 Jsdelivr 为静态资源提供CDN加速" alt="Jsdelivr"></a><a style="margin-inline:5px"target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由 GitHub 托管" alt="GitHub"></a><a style="margin-inline:5px"target="_blank"href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" alt="img" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/mouse_snow.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start -->
+  <script data-pjax src="https://cdn.jsdelivr.net/gh/Zfour/hexo-github-calendar@1.16/hexo_githubcalendar.js"></script>
+  <script data-pjax>
+        function GithubCalendarConfig(){
+            var git_githubapiurl ="https://python-github-calendar-api.vercel.app/api?lxowalle";
+            var git_color =['#e4dfd7', '#f9f4dc', '#f7e8aa', '#f7e8aa', '#f8df72', '#fcd217', '#fcc515', '#f28e16', '#fb8b05', '#d85916', '#f43e06'];
+            var git_user ="lxowalle";
+            var parent_div_git = document.getElementById('recent-posts');
+            var git_div_html = '<div class="recent-post-item" style="width:100%;height:auto;padding:10px;"><div id="github_loading" style="width:10%;height:100%;margin:0 auto;display: block"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 50 50" style="enable-background:new 0 0 50 50" xml:space="preserve"><path fill="#d0d0d0" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z" transform="rotate(275.098 25 25)"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform></path></svg></div><div id="github_container"></div></div>';
+            if(parent_div_git && location.pathname =='/'){
+                console.log('已挂载github calendar')
+                // parent_div_git.innerHTML=git_div_html+parent_div_git.innerHTML // 无报错，但不影响使用(支持pjax跳转)
+                parent_div_git.insertAdjacentHTML("afterbegin",git_div_html) // 有报错，但不影响使用(支持pjax跳转)
+            };
+            GithubCalendar(git_githubapiurl,git_color,git_user)
+        }
+        if(document.getElementById('recent-posts')){
+            GithubCalendarConfig()
+        }
+    </script>
+    <style>#github_container{min-height:280px}@media screen and (max-width:650px) {#github_container{background-image:;min-height:0px}}</style>
+    <style>undefined</style><!-- hexo injector body_end end --></body></html>
