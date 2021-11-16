@@ -88,7 +88,50 @@ NULL 与没有数据是不一样的，它代表着未知的数据
 
 ## 二、C语言操作数据库
 
-[这里](https://developer.51cto.com/art/202009/627136.htm)
+使用C语言操作数据库，操作的方式类似于面向SQL语句编程，也就是需要先知道目前操作数据库需要哪一条SQL语句，然后可以通过`sqlite3_exec`函数之间执行这条指令，即可完成操作。此外对于一些数据很长的指令，则可以通过`sqlite3_prepare_v2`将关键的语句转换为二进制形式保存，然后通过`sqlite3_bind_blob`绑定数据，然后使用`sqlite3_step`执行二进制SQL语句，最后用`sqlite3_finalize`释放前面使用的资源。
+
+目前常用以下两种方法：
+方法1：
+```c
+/* 定义一个SQL语句字符串 */
+char *sql = "CREATE TABLE demo_table(
+            id INTEGER PRIMARY KEY, 
+            uid BLOB);"
+
+/* 执行SQL语句 */
+sqlite3_exec(database, sql, NULL, 0, NULL);
+
+/* 完成 */
+```
+方法2：
+```c
+sqlite3_stmt *stmt = NULL;
+
+/* 定义一个不完整的SQL语句字符串 */
+char sql[512];
+snprintf(sql, sizeof(sql), "INSERT INTO " DOOR_DB_TABLE_NAME"(id,key,uid)"
+    " VALUES(%d,?,?);", 1);
+
+/* 将不完整的SQL语句转换为结构体形式 */
+sqlite3_prepare_v2(db, sql, strlen(sql), &stmt, NULL);
+
+/* 添加参数 */
+sqlite3_bind_blob(stmt, 1, item->key, sizeof(item->key), SQLITE_STATIC);    // 添加到第1个问号
+sqlite3_bind_blob(stmt, 2, item->uid, sizeof(item->uid), SQLITE_STATIC);    // 添加到第2个问号
+
+/* 执行结构体形式的SQL语句（注意返回值为SQLITE_DONE，说明执行结束；返回值为SQLITE_ROW,说明获取了一行参数并且还有参数） */
+while(sqlite3_step(stmt) == SQLITE_ROW)
+{
+    sqlite3_column_int(stmt, 1);                    // 获取第一列参数id
+    len = sqlite3_column_bytes(stmt, 2);            // 获取第二列参数的长度
+    str = (char *)sqlite3_column_blob(stmt, col);   // 获取第二列参数
+}
+
+/* 释放资源 */
+sqlite3_finalize(stmt);
+```
+
+点击[这里](https://developer.51cto.com/art/202009/627136.htm)可以找到更多的说明。
 
 ### 2.1 创建数据库
    创建一个数据库，直接调用sqlite提供的API创建。
@@ -247,5 +290,3 @@ int mf_sqlite_check_table(sqlite3 *database, char *table_name)
    return count;
 }
 ```
-
-累了累了,待补..
