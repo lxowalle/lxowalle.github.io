@@ -45,7 +45,24 @@ tags: Linux
 
 #### cp命令
 
-1. 复制时如果需要保留软链接，则添加-
+1. 复制时如果需要保留软链接，则添加-d
+
+
+
+#### GCC链接时所有依赖库的顺序
+
+参考[这里](https://blog.csdn.net/csq_year/article/details/80146760)
+
+1. LDFLAGS选项 -L 参数指定的路径
+2. 系统环境变量 LIBRARY_PATH（某些系统或编译器下可能无效）
+3. gcc安装时自身配置的搜索路径，gcc --print-search-dir | grep libraries 可查看，链接时会以-L参数形式传递给ld
+4. ld安装时自身配置的搜索路径，ld -verbose | grep SEARCH_DIR 可查看
+
+
+
+#### 解决Ubuntu微信不能发送图片的问题
+sudo apt install libjpeg62:i386
+
 
 #### 修改子仓库的地址
 
@@ -55,5 +72,53 @@ tags: Linux
 3. 执行git submodule foreach -q git config remote.origin.url查看子仓库实际路径
 4. 更新子仓库git submodule update --remote
 ```
+
+#### 通过ngrok远程连接Linux
+
+1. [下载ngrok](https://ngrok.com/download)
+
+   ```shell
+   # 1. 通过上面链接到官网直接下载
+   # 2. 通过apt下载
+   curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc
+   sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null 
+   sudo tee /etc/apt/sources.list.d/ngrok.list
+   sudo apt update && sudo apt install ngrok   
+   # 3. 通过snap下载
+   snap install ngrok
+   ```
+
+2. 获取token
+
+   使用github账号登录ngrok可以自动获取token
+
+   ```shell
+   # 配置token
+   ngrok authtoken <token>
+   ```
+
+3. 启动ngrok
+
+   执行下面的命令启动，启动后可以看到连接信息
+
+   ```shell
+   # 1. http
+   ngrok http 80
+   # 2. scp(ssh连接用这个)
+   ngrok scp 22
+   ```
+
+4. 安装ssh守护进程
+
+   ```shell
+   sudo apt install openssh-server
+   ```
+
+5. 连接Linux
+
+   ```shell
+   # 根据ngrok的信息连接，例如`tcp://6.tcp.ngrok.io:14554 -> localhost:22`,连接命令参考下面的写法：
+   ssh liuxo@6.tcp.ngrok.io -p14554
+   ```
 
    
