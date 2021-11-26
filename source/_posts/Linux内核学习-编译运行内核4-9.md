@@ -318,7 +318,7 @@ qemu-system-x86_64 \
 
 ### pty
 
-​	pty是伪终端设备，一般用于远程连接。pty由Master和Slave端主动，/deb/ptmx是Master端，/dev/pty/n是Slave端，任何一段的输入都会传达到另一端。
+​	pty是伪终端设备，一般用于远程连接。pty由Master和Slave端主动，/dev/ptmx是Master端，/dev/pty/n是Slave端，任何一段的输入都会传达到另一端。
 
 ​	使用`tty`命令查看当前用户的登录终端：
 
@@ -354,7 +354,7 @@ cat etc/inittab
    - 5，图形用户模式
    - 6，重启
 
-3. action：表示登记项的进程在一定条件下需要执行的动作。包括有：
+3. action：表示登记项的进程在一定条件下需要执行的动作。条件有：
 
    - respawn：当进程终止后马上启动一个新的
    - askfirst：当进程终止后先询问，再启动一个新的

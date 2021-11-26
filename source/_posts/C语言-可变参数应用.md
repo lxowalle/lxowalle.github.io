@@ -65,6 +65,7 @@ test_ctl1("%d %d %s\n", (int)1, (int)2, "hello");
 ```
 
 3. 输出结果
+
 ```c
 1 2 hello
 ```
