@@ -121,4 +121,215 @@ sudo apt install libjpeg62:i386
    ssh liuxo@6.tcp.ngrok.io -p14554
    ```
 
-   
+#### 使用libjpeg将rgb图片保存为jpg格式到本地
+
+```c
+/* 图片应用 */
+#include "libjpeg.h"
+uint8_t *buffer = img_addr;
+if (NULL != buffer)
+{
+    jpeg_img_t img = 
+    {
+        .h = img_h,
+        .w = img_w,
+        .bpp = 3,
+        .data = buffer
+    };
+    uint64_t jpeg_size = img_w * img_h * 3;
+    uint8_t *jpeg = (uint8_t *)malloc(jpeg_size);
+    if (NULL != jpeg && 0 == libjpeg_compress(&img, 100, &jpeg, &jpeg_size))
+    {
+        printf("shotsnap size: %lld bytes\r\n", jpeg_size);
+        int ret0 = utils_save_bin("qrcode.jpg", (int)jpeg_size, jpeg);
+        if (ret0)
+            printf("Error ret0:%d\n", ret0);
+        usleep(50 * 1000);
+        free(jpeg);
+    }
+}
+```
+
+#### qrcode库使用，通过本地jpg图片验证二维码功能
+
+```c
+    #include "libjpeg.h"
+    #include "stdio.h"
+    #include <sys/stat.h>
+    #define JPG_FILE_NAME   "qrcode.jpg"
+    jpeg_img_t img;
+    uint8_t buffer[24471];
+    int buffer_len = 0;
+
+    // struct stat statbuf;
+    // stat(JPG_FILE_NAME, &statbuf);
+    // buffer_len = statbuf.st_size;
+    buffer_len = 24471;
+    printf("File size:%d\n", buffer_len);
+
+	FILE* fp = fopen(JPG_FILE_NAME, "rb");
+	if (fp == NULL)
+	{
+		fprintf(stderr, "fopen %s failed\n", JPG_FILE_NAME);
+		return -1;
+	}
+    int len = fread(buffer, 1, (int)buffer_len, fp);
+    if (len != buffer_len)
+    {
+        fclose(fp);
+		fprintf(stderr, "fread bin failed %d\n", len);
+		return -1;
+    }
+    fclose(fp);
+
+    libjpeg_decompress(&img, buffer, buffer_len);
+
+    uint8_t qr_res[128];
+    int num = mf_qr_scan_pic(img.data, img.w, img.h, qr_res, 0);
+    if (num)
+        printf("QR SCAN RESULT: %s\n", qr_res);
+
+    libjpeg_decompress_free(&img);
+
+    return 0;
+```
+
+#### 系统通过pdflush进程定时将文件缓存写入磁盘
+
+参考自这里[这里]
+Linux系统写文件的操作是异步的，这是为了提高程序执行效率，以及提升磁盘寿命。一般情况Linux先将数据写道cache，然后由pdflush进程将需要写的数据（被标记的脏页）写到磁盘中。在以下几个情况，系统会唤醒pdflush回写脏页：
+1. 定时方式
+   内核定时唤醒pdflush线程来写脏页，并且不是写回所有脏页。而是被标记为脏的时间超过`/proc/sys/vm/dirty_expire_centisecs`(单位0.01s)的页。定时唤醒的时间由`/proc/sys/vm/dirty_writeback_centisecs`决定(单位0.01s)
+
+2. 内存不足的时候
+   当内存不足时，将会持续写入脏页，每次写入1024个页面，直到满足空闲页为止。
+
+3. 在写操作时发现脏页超过一定比例。
+   当脏页占用系统内存的比例超过`/proc/sys/vm/dirty_background_ratio`时，write系统调用会唤醒pdflush回写脏页，直到脏页比例低于限制的值。
+
+4. 用户调用sync系统调用
+   sync系统调用会唤醒pdflush进程并且回写脏页，直到全部脏页写完为止。
+
+#### 一些shell脚本的例子
+
+```shell
+ROOTFS_BACK_DIR=/rootfs_back
+ROOTFS_BACK_DEV=/dev/mmcblk0p5
+ROOTFS_DATA_DIR=/rootfs_data
+ROOTFS_DATA_DEV=/dev/mmcblk0p6
+
+RESET_APP_NAME=reset
+RESET_APP_DEFAULT_PATH=/home
+RESET_APP_PATH=${ROOTFS_BACK_DIR}
+
+# Mount app directory as a readonly system
+if [ ! "`df | grep ${ROOTFS_BACK_DEV}`" ]; then
+    # Check dir
+    echo "check app dir"
+    if [ ! -e ${ROOTFS_BACK_DIR} ]; then
+        echo "create app dev"
+        mkdir ${ROOTFS_BACK_DIR}
+    fi
+    
+    # Mount
+    echo "mount app dev"
+    fsck.ext4 -y ${ROOTFS_BACK_DEV} &> /dev/null
+    mount -t ext4 -o ro ${ROOTFS_BACK_DEV} ${ROOTFS_BACK_DIR} 2> /dev/null
+    if [ "$?" -ne "0" ]; then
+        echo "mkfs app dev"
+        mkfs.ext4 -m 0 ${ROOTFS_BACK_DEV} &> /dev/null
+        mount -t ext4 -o ro ${ROOTFS_BACK_DEV} ${ROOTFS_BACK_DIR} 2> /dev/null
+    fi
+fi
+
+# Mount log directory as a readwrite system
+if [ ! "`df | grep ${ROOTFS_DATA_DEV}`" ]; then
+    # Check dir
+    echo "check log dir"
+    if [ ! -e ${ROOTFS_DATA_DIR} ]; then
+        echo "create log dir"
+        mkdir ${ROOTFS_DATA_DIR}
+    fi
+    
+    # Mount
+    echo "mount log dev"
+    fsck.ext4 -y ${ROOTFS_DATA_DEV} &> /dev/null
+    mount -t ext4 -o rw ${ROOTFS_DATA_DEV} ${ROOTFS_DATA_DIR} 2> /dev/null
+    if [ "$?" -ne "0" ]; then
+        echo "mkfs log dev"
+        mkfs.ext4 -m 0 ${ROOTFS_DATA_DEV} &> /dev/null
+        mount -t ext4 -o rw ${ROOTFS_DATA_DEV} ${ROOTFS_DATA_DIR} 2> /dev/null
+    fi
+fi
+
+# Move ota app to app dir
+if [ "`df | grep ${ROOTFS_BACK_DEV}`" ]; then
+    if [ ! -e ${RESET_APP_PATH}/${RESET_APP_NAME} ]; then
+	    if [ -e ${RESET_APP_DEFAULT_PATH}/${RESET_APP_NAME} ]; then
+            mount -t ext4 -o rw,remount ${ROOTFS_BACK_DIR}
+            cp -rf ${RESET_APP_DEFAULT_PATH}/${RESET_APP_NAME} ${ROOTFS_BACK_DIR}
+            mount -t ext4 -o ro,remount ${ROOTFS_BACK_DIR}
+            cd ${RESET_APP_PATH}/${RESET_APP_NAME} && ./start_app &> /dev/null &
+        fi
+    fi
+fi
+```
+
+#### getenv函数
+
+getenv函数可以获取Linux系统环境变量的值
+
+```c
+getenv("TSLIB_TSDEVICE");
+```
+
+#### tslib库的使用（TODO：移到其他文章）
+
+参考[tslib 移植与使用](https://blog.csdn.net/weixin_42832472/article/details/111303980)
+
+833交叉编译命令：   
+```shell
+./autogen.sh
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=/
+make
+make install DESTDIR=$PWD/install
+
+adb push lib /root		# 删除了软链接文件
+adb push ts.conf /etc
+# 设置ts.conf
+module_raw input
+
+export TSLIB_TSDEVICE=/dev/input/event1
+export TSLIB_CALIBFILE=/etc/pointercal	# 可忽略
+export TSLIB_CONFFILE=/etc/ts.conf
+export TSLIB_PLUGINDIR=/root/lib/ts
+export TSLIB_CONSOLEDEVICE=none
+export TSLIB_FBDEVICE=/dev/fb0
+```
+
+833静态编译命令：
+
+```shell
+# 静态编译
+./autogen.sh
+PATH=$PATH:/opt/toolchain-sunxi-musl/toolchain/bin
+./configure --host=arm-openwrt-linux-muslgnueabi --prefix=/ --enable-static --disable-shared --enable-input=static --enable-linear=static --enable-iir=static
+make
+make install DESTDIR=$PWD/install
+```
+
+报错的解决：
+
+1. 错误`Couldn't load module input`
+
+解决：没设置TSLIB_PLUGINDIR
+
+#### git删除分支
+
+```shell
+# 删除远程分支
+git push origin --delete [分支名]
+# 删除本地分支
+git branch -d [分支名]
+```
