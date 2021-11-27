@@ -333,3 +333,30 @@ git push origin --delete [分支名]
 # 删除本地分支
 git branch -d [分支名]
 ```
+
+
+
+#### 安装LiveSuit
+
+使用[这个仓库](https://github.com/jake5253/allwinner-livesuit)安装
+
+```shell
+# 进入仓库，执行以下命令
+chmod +x livesuit_installer.run 
+sudo ./livesuit_installer.run
+sudo apt install dkms
+# 完成
+```
+
+
+
+#### 缺少库libpng12-0
+
+[Ubuntu 20.04, 19.10 or 19.04出现libqtgui4 : Depends: libpng12-0 (>= 1.2.13-4) but it is not installed](https://blog.csdn.net/TaChean/article/details/104873253)
+
+```shell
+sudo add-apt-repository ppa:linuxuprising/libpng12
+sudo apt update
+sudo apt install libpng12-0
+```
+
