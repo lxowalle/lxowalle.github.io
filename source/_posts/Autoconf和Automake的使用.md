@@ -416,6 +416,85 @@ noinst_HEADERS =
 
 9. 完成
 
+## 关于Makefile.am文件的配置
+
+通过Makefile.am文件能自定义目标文件的编译策略，实现灵活的搭建自己的工程。
+
+### Makefile.am的常用全局变量
+
+1. $(top_builddir) 生成目标文件的最上层目录，也就是添加了xxx_PROGRAMS的Makefile.am所在的目录
+2. $(top_srcdir) 工程的最顶层目录，也就是第一个Makefile.am所在的目录
+3. $(prefix) 安装路径，执行./configure --prefix=xxx可以更新这个变量的值
+
+### Makefile.am的常用内容
+
+我总结了一部分，但是因为实战还没有用到，所以解释简略，等待后续补充更多命令和说明
+
+```make
+## 
+#   这是一个Makefile.am的模板，只在开发时作为参考使用
+##
+# noinst_PROGRAMS       = template              #   编译为可执行文件(不安装)
+# bin_PROGRAMS          =                       #   编译为可执行文件(安装到bin目录)
+
+# noinst_LIBRARIES      =                       #   编译为库文件(不安装)
+# template_LIBRARIES    =                       #   编译为库文件(安装目录与可执行文件相同)
+# template_LTLIBRARIES  =                       #   编译为库文件(libtool)(安装目录与可执行文件相同)
+
+# template_SOURCES      = src/main.c \
+#                         src/hello1.c \
+#                         src/hello2.c \
+#                         src/hello3.c          #   目标文件依赖的所有源文件
+# noinst_HEADERS        = include/main.h \
+#                         include/hello.h       #   目标文件依赖的所有头文件(不安装)
+# template_HEADERS      =                       #   目标文件依赖的所有头文件(安装目录与可执行文件相同)
+
+# template_LIBADD       =                       #   编译时需要加载的其他的库
+# template_LDADD        =                       #   链接时需要的所有库文件
+
+# template_CPPFLAGS     = -Iinclude             #   c预处理参数
+# template_CFLAGS       =                       #   c编译选项
+# template_CXXFLAGS     =                       #   c++编译选项
+
+# template_LDFLAGS      =                       #   链接库标志位
+
+# templatedir           =                       #   数据文件的安装目录
+# template_DATA         =                       #   数据文件
+
+# EXTRA_DIST            =                       #   需要打包的所有文件
+# SUBDIR                =                       #   需要递归处理的目录(会找到Makefile.am并执行，注意先后顺序)
+
+# AUTOMAKE_OPTIONS      = subdir-objects        #   AUTOMAKE编译选项,详情见(https://www.gnu.org/software/automake/manual/html_node/List-of-Automake-options.html)
+
+# 编译动态库的方式
+# projectlibdir=$(libdir)           //新建一个目录，就是该目录就是lib目录
+# projectlib_PROGRAMS=project.so
+# project_so_SOURCES=xxx.C
+# project_so_LDFLAGS=-shared -fpic //GCC编译动态库的选项
+```
+
+### 遇到的问题
+
+问题1：
+
+```
+apps/template/Makefile.am:11: warning: source file 'src/main.c' is in a subdirectory,
+apps/template/Makefile.am:11: but option 'subdir-objects' is disabled
+```
+
+检查生成的库文件名是否正确，例如配置为`noinst_PROGRAM = template`和`template_SOURCES = src/main.c`，则检查txxx_SOURCES中的xxx是否正确
+
+问题2:
+
+```
+apps/template/Makefile.am:11: warning: source file 'src/main.c' is in a subdirectory,
+apps/template/Makefile.am:11: but option 'subdir-objects' is disabled
+```
+
+生成Makefile时添加参数`./configure  --disable-dependency-tracking`
+
+
+
 参考文章：
 
 [Linux下autoconf和automake使用](https://www.laruence.com/2009/11/18/1154.html)
@@ -424,3 +503,4 @@ noinst_HEADERS =
 
 [autotools 自动编译系列简介](https://blog.csdn.net/smilejiasmile/article/details/115423035)
 
+[Makefile.am文件的实例讲解](https://blog.csdn.net/zmxiangde_88/article/details/8024223)
