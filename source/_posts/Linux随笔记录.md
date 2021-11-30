@@ -360,3 +360,8 @@ sudo apt update
 sudo apt install libpng12-0
 ```
 
+
+
+GCC命令行参考
+
+点击[这里](http://tigcc.ticalc.org/doc/comopts.html#SEC3)查看gcc命令行的详细信息
