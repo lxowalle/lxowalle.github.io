@@ -24,7 +24,7 @@ tags:
    # 更新到nodejs最新版本
    sudo npm cache clean -f
    sudo npm install -g n
-   sudo n lastest
+   sudo n latest
    PATH="$PATH"
    ```
 
@@ -98,14 +98,22 @@ tags:
    sudo apt-get install git
    sudo apt-get install nodejs
    sudo apt-get install npm
+
+   # 安装npm
    sudo npm install
-   
+
    # 更新到nodejs最新版本
    sudo npm cache clean -f
    sudo npm install -g n
-   sudo n lastest
+   sudo n latest
    PATH="$PATH"
    
+   # 安装npm(重新执行)
+   sudo npm install
+
+   # 安装hexo
+   sudo npm install hexo-cli -g
+
    # 更新博客插件
    sudo npm install hexo-deployer-git --save
    npm install hexo-githubcalendar --save
