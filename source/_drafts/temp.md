@@ -19,7 +19,7 @@ hexo P <filename>
 
 在目标检测当中，有一个重要的概念就是 IOU。一般指代模型预测的 bbox 和 Groud Truth 之间的交并比。交并比是指两张图片交集部分与两张图片的并集部分相比的值，即(P1 ∩ P2)/(P1 ∪ P2)
 
-计算IOU总结为：两张图片相交部分面积除以两张图片叠加后的总面积
+计算IOU总结为：两张图片相交部分面积除以两张图片叠加后的总面积(图片叠加后重叠的部分只计算一次)
 
 IOU代码
 ```c
@@ -59,8 +59,8 @@ static double _caculate_face_iou(face_obj_t *rgb_face, face_obj_t *ir_face)
     /* 坐标映射 */
     mf_point_t A = {.x = rgb_face->x1,.y = rgb_face->y1};
     mf_point_t B = {.x = rgb_face->x2,.y = rgb_face->y2};
-    mf_point_t C = {.x = ir_face->x1 + 122,.y = ir_face->y1 - 124}; // 手动映射
-    mf_point_t D = {.x = ir_face->x2 + 185,.y = ir_face->y2 - 65};  // 手动映射
+    mf_point_t C = {.x = ir_face->x1,.y = ir_face->y1}; // 手动映射
+    mf_point_t D = {.x = ir_face->x2,.y = ir_face->y2};  // 手动映射
     mf_point_t E,F;
     E.x = (C.x <= B.x && C.x >= A.x) ? C.x : A.x;
     E.y = (C.y <= B.y && C.y >= A.y) ? C.y : A.y;
@@ -731,10 +731,10 @@ mf_qr_scan_ctl(QR_CTLSET_HANDLECB, sacn_and_config_wifi_cb);
 [参考文章](https://segmentfault.com/a/1190000008734662)
 
 步骤：
-1. `git fsck -full`
+1. `git fsck --full`
 2. `find . type f -empty -delete -print`   ,目的是删除空文件，这行代码有可能会删掉有用的空文件，这时候可以选择手动删除空文件
 3. `tail -n 2 .git/logs/refs/heads/xxx`,获取xxx分支的最后两个提交
-4. `git update-ref HEAD`,将HEAD指针指向最后第二提交
+4. `git update-ref HEAD +第二次分支hash值`,将HEAD指针指向最后第二提交
 5. `git pull`,拉取代码
 6. 完成
 
@@ -1444,9 +1444,580 @@ static void _read_dbr(void)
 
 FAT区
 
-FAT区用来标识一个文件的簇数.FAT32的FAT区每个单元有4字节,其中FAT[0]表示FAT介质类型,FAT[1]表示FAT错误标志,从FAT[2]开始表示文件,每个FAT单元代表一个簇,当该FAT单元的值为0xFFFFFFF8时表示文件末尾.因此可以推断从上个文件末尾到下一个文件末尾的FAT单元数量来推断出文件的大小(簇数).
+[文件分配表(FAT)及其结构_千金甜果的专栏](https://www.bthss.com/info/%E6%96%87%E4%BB%B6%E5%88%86%E9%85%8D%E8%A1%A8FAT%E7%9A%84%E4%BD%9C%E7%94%A8%E5%8F%8A%E7%B1%BB%E5%88%AB.html)
+
+FAT区用来标识一个文件的簇数.FAT32的FAT区每个单元有4字节,其中FAT[0]表示FAT介质类型,FAT[1]表示FAT错误标志,从FAT[2]开始表示文件,每个FAT单元填入一个簇号(0x00000001-0xffffffef)代表一个簇,当该FAT单元的值为0xFFFFFFF8时表示文件末尾.因此可以推断从上个文件末尾到下一个文件末尾的FAT单元数量来推断出文件的大小(簇数).
 
 数据区(TODO)
+
+
+## FreeRTOS
+
+参考资料：
+[FreeRTOS参考手册](https://deepinout.com/freertos-tutorials)
+[FreeRTOS官方API说明](https://www.freertos.org/a00125.html)
+
+### API应用
+
+**FreeRTOS共有5组：**
+- 任务和调度程序相关函数
+- 队列相关函数
+- 信号量相关函数
+- 软件计时器相关函数
+- 事件相关函数
+
+**注意事项：**
+- 不以FromISR结尾的API禁止在中断服务程序中执行。此外，对于硬件中断的优先级高于configMAX_SYSCALL_INTERRUPT_PRIORITY(或configMAX_API_CALL_INTERRUPT_PRIORITY)的情况，禁止使用任何(包括FromISR结尾)的API，这是确保目标硬件中断的确定性和延时不受FreeRTOS影响。
+- 调度程序挂起时，禁止调用可能导致上下文(任务)切换的API
+- 在临界区禁止调用可能导致上下文(任务)切换的API
+
+#### 任务和调度程序API
+
+**xTaskAbortDelay()**
+
+将任务从阻塞态退出就绪态。返回pdPASS表示任务从阻塞链表删除，返回pdFAIL表示任务不在阻塞态
+在FreeRTOSConfig.h中，INCLUDE_xTaskAbortDelay必须设置为1才能使xTaskAbortDelay()可用。
+
+```c
+#include "FreeRTOS.h"
+#include "task.h"
+
+BaseType_t xTaskAbortDelay( TaskHandle_t xTask );
+```
+
+示例:
+
+示例让句柄为user_handler0的任务从阻塞态退出。
+
+```c
+void user_task1(void *param)
+{
+    BaseType_t res;
+    while (1)
+    {
+        res = xTaskAbortDelay(user_handle0);
+        if (res == pdPASS)
+        {
+            printf("Task was in the blocked, but is not now\n");
+        }
+        else
+        {
+            printf("Task is not in the blocked anyway\n");
+        }
+
+        vTaskDelay(50);
+    }
+}
+```
+
+**xTaskGetHandle**
+
+根据任务名称，获取任务句柄。
+
+```c
+TaskHandle_t handle = xTaskGetHandle("handle");
+```
+
+**vTaskSetApplicationTaskTag**
+
+为任务添加标签，也可以添加回调函数。需要在configUSE_APPLICATION_TASK_TAG 定义为 1 时才能使用。
+
+功能：
+- 标签(数字):用来记录多任务下不同任务的状态切换等信息
+- 回调函数(函数指针):为当前绑定回调函数,在任务in或out时被调用。
+(由于是通过一个参数保存pxCurrentTCB->pxTaskTag，因此上述功能只能生效一个)
+
+功能1-标签：
+
+```c
+#include "task.h"
+
+void user_task0(void *param)
+{
+    int a = 0;
+    
+    while (1)
+    {
+        vTaskSetApplicationTaskTag(NULL, (void *)a ++);         // 设置当前任务的标签为a
+        int tag = xTaskGetApplicationTaskTag(NULL);             // 获取当前任务的标签值
+        printf("tag:%d\n", tag);
+
+        vTaskDelay(1000);
+    }
+}      
+```
+
+功能2-回调函数
+
+```c
+#include "task.h"
+
+BaseType_t user_task0_hook( void * param)
+{
+    printf("Hook %d\n", __LINE__);
+    
+    return 0;
+}
+
+void user_task0(void *param)
+{
+    vTaskSetApplicationTaskTag(NULL, (void *)user_task0_hook);      // 设置钩子函数
+    while (1)
+    {
+        xTaskCallApplicationTaskHook(NULL, 0);                      // 执行钩子函数
+
+        vTaskDelay(1000);
+    }
+}
+```
+
+**xTaskCheckForTimeOut**
+
+进入阻塞态并等待一个事件,如果在超时事件内多次触发该事件，则会调整超时时间但不会重置超时时间。超时后会重置超时时间。
+
+```c
+#include "FreeRTOS.h"
+#include "task.h"
+BaseType_t xTaskCheckForTimeOut( TimeOut_t * const pxTimeOut, 
+                                 TickType_t * const pxTicksToWait );
+```
+
+**xTaskCreate**
+
+创建一个任务。任务运行内存从FreeRTOS栈中分配。通过configTOTAL_HEAP_SIZE来配置FreeRTOS堆大小，用xPortGetFreeHeapSize()函数查询剩余可用堆的内存量(heap3无法使用)。
+
+```c
+#include "FreeRTOS.h"
+#include "task.h"
+BaseType_t xTaskCreate( TaskFunction_tpvTaskCode,       /* The function that implements the task. */
+                        const char* const pcName,       /* The text name assigned to the task - for debug only as it is not used by the kernel. */
+                        unsigned shortusStackDepth,     /* The size of the stack to allocate to the task. */
+                        void *pvParameters,             /* The parameter passed to the task - not used in this simple case. */
+                        UBaseType_t uxPriority,         /* The priority assigned to the task. */
+                        TaskHandle_t *pxCreatedTask);   /* The task handle is not required, so NULL is passed. */
+```
+
+示例：
+
+```c
+static TaskHandle_t user_handle0 = NULL;
+BaseType_t res;
+
+void user_task0(void *param)
+{
+    while (1)
+    {
+        printf("=>%d\n", __LINE__);
+        vTaskDelay(3000);
+    }
+
+    vTaskDelete( NULL );
+}
+
+res = xTaskCreate(user_task0, "user task0", configMINIMAL_STACK_SIZE, (void *)1, 3, &user_handle0);
+if (res == pdPASS)
+{
+    printf("Create task successfully!\n");
+}                     
+```
+
+**xTaskCreateStatic**
+
+创建一个任务。任务运行内存由用户自定义分配。使用此函数需要将宏configSUPPORT_STATIC_ALLOCATION定义为1，同时需要实现vApplicationGetIdleTaskMemory()和vApplicationGetTimerTaskMemory()这两个函数
+
+注意任务的优先级范围为[0, `configMAX_PRIORITIES – 1`],如果`configUSE_PORT_OPTIMISED_TASK_SELECTION = 0`，则优先级没有上限。
+
+```c
+#include "FreeRTOS.h"
+#include "task.h"
+
+TaskHandle_t xTaskCreateStatic( TaskFunction_t pvTaskCode,              /* Function that implements the task. */
+                                const char * const pcName,              /* Human readable name for the task. */
+                                uint32_t ulStackDepth,                  /* Task's stack size, in words (not bytes!). */
+                                void *pvParameters,                     /* Parameter to pass into the task. */
+                                UBaseType_t uxPriority,                 /* The priority of the task. */
+                                StackType_t * const puxStackBuffer,     /* The buffer to use as the task's stack. */
+                                StaticTask_t * const pxTaskBuffer );    /* The variable that will hold that task's TCB. */			
+```
+
+示例:
+
+```c
+#define STACK_SIZE  (200)
+static TaskHandle_t user_handle2 = NULL;
+static StaticTask_t xTaskBuffer;
+static StackType_t variables;
+static StackType_t xStack[STACK_SIZE];
+
+void user_task2(void *param)
+{
+    while (1)
+    {
+        printf("=>%d\n", __LINE__);
+        vTaskDelay(3000);
+    }
+
+    vTaskDelete( NULL );
+}
+
+user_handle2 = xTaskCreateStatic(user_task2, "user task2", STACK_SIZE, NULL,  1, xStack, &xTaskBuffer);
+if (user_handle2 != NULL)
+{
+    printf("Create task successfully!\n");
+}
+```
+
+**vTaskDelete**
+
+删除任务。允许删除自己
+
+注意如果执行vTaskDelete来删除任务，则需要确保空闲任务可以被运行，否则无法释放被删除任务的内存
+
+```c
+void vTaskDelete( TaskHandle_t xTaskToDelete );
+```
+
+**uxTaskPriorityGet和vTaskPrioritySet**
+
+设置/获取任务的优先级。取值范围是0~(configMAX_PRIORITIES – 1
+
+```c
+UBaseType_t uxTaskPriorityGet( const TaskHandle_t xTask );
+void vTaskPrioritySet( TaskHandle_t xTask,
+                       UBaseType_t uxNewPriority );
+```
+
+**vTaskSuspend和vTaskResume**
+
+暂停/恢复任务
+
+```c
+void vTaskSuspend( TaskHandle_t xTaskToSuspend );
+void vTaskResume( TaskHandle_t xTaskToResume );
+```
+
+**vTaskDelay和vTaskDelayUntil**
+
+延时函数。延时时会让任务进入阻塞状态。其中vTaskDelay表示等待指定Tick个时钟后让任务恢复，而vTaskDelayUntil也是等待Tick个时钟，但是更加严格，会等待上次执行vTaskDelayUntil到这次执行vTaskDelayUntil之间的时间
+
+使用pdMS_TO_TICKS(x)宏可以将Tick值转换为毫秒
+
+```c
+void vTaskDelay( const TickType_t xTicksToDelay ); /* xTicksToDelay: 等待多少给Tick */
+
+/* pxPreviousWakeTime: 上一次被唤醒的时间
+ * xTimeIncrement: 要阻塞到(pxPreviousWakeTime + xTimeIncrement)
+ * 单位都是Tick Count
+ */
+BaseType_t xTaskDelayUntil( TickType_t * const pxPreviousWakeTime,
+                            const TickType_t xTimeIncrement );
+```
+
+示例
+```c
+/** 下面是xTaskDelayUntil的使用示例 */
+void user_task2(void *param)
+{
+    TickType_t last_wake_time = xTaskGetTickCount();
+
+    while (1)
+    {
+        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(4000));
+    }
+}
+```
+
+**空闲任务**
+
+vTaskStartScheduler()函数会在启动调度器时创建空闲任务，空闲任务有以下特点:
+- 空闲任务优先级为0
+- 空闲任务只会在运行态和就绪态，禁止阻塞空闲任务
+
+可以为空闲任务添加钩子函数，钩子函数的作用：
+- 执行一些低优先级、后台的、需要连续执行的函数
+- 测量系统的空闲时间。空闲任务能被执行就意味着所有的高优先级任务都停止了，所以测量空闲任务占据的时间，就可以算出处理器占用率。
+- 让系统进入省电模式
+
+钩子函数的限制：
+- 不允许让空闲任务进入阻塞或暂停状态
+- 尽量让空闲任务高效运行，否则空闲任务可能没有时间来释放vTaskDelete删除任务的内存
+
+使用钩子函数需要定义宏configUSE_IDLE_HOOK=1，此外钩子函数固定为`void vApplicationIdleHook(void)`
+
+```c
+/** C file */
+void vApplicationIdleHook( void )
+{
+    printf("idle hook\n");
+}
+
+/** H file */
+void vApplicationIdleHook( void );
+```
+
+**调度算法**
+
+使用宏configUSE_PREEMPTION、configUSE_TIME_SLICING和configUSE_TICKLESS_IDLE来配置调度算法
+
+configUSE_PREEMPTION：1 可抢占，0 不可抢占
+configUSE_TIME_SLICING：1 时间片轮转，0 非时间片轮转
+configIDLE_SHOULD_YIELD：1 空闲任务让步，0 空闲任务不让步
+
+关于可抢占：高优先级的任务就绪后可以立即抢占运行态的低优先级任务。（可抢占调度）
+关于不可抢占：高优先级的任务就绪后只能等待运行态任务主动释放资源。（合作调度
+时间片轮转：相同优先级的任务会轮流执行，且每个任务每次轮流执行固定时间后会释放CPU让下一个任务执行
+非时间片轮转：任务不会主动释放，直到主动释放或被高优先级任务抢占
+空闲任务让步：空闲任务每次循环都会检查是否有其他任务执行，并让步给其他任务执行
+空闲任务不让步：空闲任务和其他任务调度方式相同
+
+#### 队列
+
+队列在读/写时都会检查是否可读/写，并且在可读写时返回pdTRUE,在不可读写时阻塞，阻塞超时时返回pdFALSE
+
+```c
+#include "queue.h"
+
+/* 创建队列 */
+QueueHandle_t xQueueCreate( UBaseType_t uxQueueLength,      // 队列项数
+                            UBaseType_t uxItemSize );       // 队列每项字节数
+
+/* 删除队列 */
+void vQueueDelete( QueueHandle_t xQueue );
+
+/* 清空队列 */
+BaseType_t xQueueReset( QueueHandle_t xQueue );
+
+/* 向队列写入数据(与xQueueSendToBack效果相同) */
+BaseType_t xQueueSend(  QueueHandle_t xQueue，
+                        const void * pvItemToQueue,         // 需要发送的数据的指针(数据被复制到队列上)
+                        TickType_t xTicksToWait             // 等待队列可用的阻塞时间
+                        );
+
+/* 向队列写入数据，写在队列头部 */
+BaseType_t xQueueSendToFront( QueueHandle_t xQueue,
+                            const void * pvItemToQueue,     // 需要发送的数据的指针(数据被复制到队列上)
+                            TickType_t xTicksToWait );      
+
+/* 从队列取数据 */
+BaseType_t xQueueReceive(   QueueHandle_t xQueue,
+                            void *pvBuffer,                 // 保存取出数据的指针,数据会被复制到缓冲上
+                            TickType_t xTicksToWait);
+
+/* 从队列取数据，但不删除 */
+BaseType_t xQueuePeek(  QueueHandle_t xQueue,
+                        void *pvBuffer,                 // 保存取出数据的指针,数据会被复制到缓冲上
+                        TickType_t xTicksToWait);
+
+/* 为队列分配名称，并将队列添加到注册表 */
+void vQueueAddToRegistry(   QueueHandle_t xQueue，
+                            char *pcQueueName);
+
+/* 从注册表删除队列 */
+void vQueueUnregisterQueue( QueueHandle_t xQueue);
+
+/* 从注册表中查找队列的名称 */
+const char *pcQueueGetName( QueueHandle_t xQueue );
+
+/* 队列空闲单元数 */
+UBaseType_t uxQueueSpacesAvailable( QueueHandle_t xQueue );      
+
+/* 队列已存在消息数 */
+UBaseType_t uxQueueMessagesWaiting( QueueHandle_t xQueue );
+
+/* 向队列覆盖写入数据，一般用来向队列空间总数为1的队列写数据 */
+BaseType_t xQueueOverwrite( QueueHandle_t xQueue，
+                            const void * pvItemToQueue);
+
+/* 查询队列是否为空  队列空pdTRUE,队列不空pdFALSE*/
+BaseType_t xQueueIsQueueEmptyFromISR( const QueueHandle_t xQueue );
+
+/* 查询队列是否已满 队列满pdTRUE,队列不满pdFALSE*/
+BaseType_t xQueueIsQueueFullFromISR(const QueueHandle_t xQueue);
+```
+
+#### 信号量
+
+由于二进制信号量、计数信号量、互斥量、递归互斥量的API有部分相同，所以API也放到了一起
+
+二进制信号量：
+1. 二进制信号量不继承优先级，因此二进制信号量可以无视任务间的优先级进行同步。
+2. 多个任务阻塞在同一个二进制信号量时，一般优先级最高的任务优先获得信号量。
+3. 二进制信号量使用只容纳一项的队列来实现，通过队列空或者满来同步任务与中断。
+4. 中断处理程序总是给出信号量(向队列写)，普通任务总是获取信号量(向队列读)。
+
+计数信号量:
+1. 计数信号量与二进制信号量相似，区别是计数信号量可以多次获取资源，直到计数值为0后无法获取资源，直到某个任务释放资源
+
+互斥量：
+1. 互斥量用来保护临界资源
+2. 互斥量会包含一个优先级继承的机制，因此不允许在中断中使用互斥量
+3. 优先级继承机制时为了减少优先级反转的问题，但没有彻底解决
+
+递归互斥量：
+1. 递归互斥量与互斥量相似。区别是递归互斥量可以多次被加锁，但对应的也需要进行多次解锁
+2. 递归互斥量同样包含优先级继承的机制，因此不允许在中断中使用递归互斥量
+
+```c
+#include "semphr.h"
+
+/* 创建信号量/互斥量 */
+SemaphoreHandle_t xSemaphoreCreateBinary( void );
+SemaphoreHandle_t xSemaphoreCreateCounting( UBaseType_t uxMaxCount,         // 最大计数值
+                                            UBaseType_t uxInitialCount);    // 初始计数值
+SemaphoreHandle_t xSemaphoreCreateMutex( void );                            
+SemaphoreHandle_t xSemaphoreCreateRecursiveMutex( void );            
+
+/* 删除信号量/互斥量(二进制信号量、计数信号量、互斥量、递归互斥量) */
+void vSemaphoreDelete( SemaphoreHandle_t xSemaphore );
+
+/* 获取信号量/互斥量(不包括递归互斥量) */
+xSemaphoreTake( SemaphoreHandle_t xSemaphore,
+                TickType_t xTicksToWait );              // 获取信号/互斥量，不包括递归互斥量
+xSemaphoreTakeRecursive( SemaphoreHandle_t xMutex,
+                         TickType_t xTicksToWait );     // 获取递归互斥量
+
+/* 释放信号量/互斥量(不包括递归互斥量) */
+xSemaphoreGive( SemaphoreHandle_t xSemaphore );         // 释放信号/互斥量，不包括递归互斥量
+xSemaphoreGiveRecursive( SemaphoreHandle_t xMutex );    // 释放递归互斥量
+
+/* 查询互斥锁的句柄 */
+TaskHandle_t xSemaphoreGetMutexHolder( SemaphoreHandle_t xMutex );
+
+/* 返回信号量的计数值 */
+UBaseType_t uxSemaphoreGetCount( SemaphoreHandle_t xSemaphore );
+
+
+```
+
+### 任务通知
+
+FreeRTOS V8.2.0开始可用，V10.4.0开始支持每个任务有多个通知
+
+```c
+#include "task.h"
+
+/* 发起通知 */
+BaseType_t xTaskNotifyGive( TaskHandle_t xTaskToNotify );       
+BaseType_t xTaskNotifyGiveIndexed( TaskHandle_t xTaskToNotify, 
+                                UBaseType_t uxIndexToNotify );  // 任务通知数组的索引数，最大不超过configTASK_NOTIFICATION_ARRAY_ENTRIES
+
+/* 接收通知 */
+uint32_t ulTask​​NotifyTake( BaseType_t xClearCountOnExit,
+                        TickType_t xTicksToWait );
+
+uint32_t ulTask​​NotifyTakeIndexed( UBaseType_t uxIndexToWaitOn,    // 任务通知数组的索引数，最大不超过configTASK_NOTIFICATION_ARRAY_ENTRIES
+                                BaseType_t xClearCountOnExit，  // 
+                                TickType_t xTicksToWait );      
+
+/* 任务通知 */
+BaseType_t xTaskNotify( TaskHandle_t xTaskToNotify,
+                        uint32_t ulValue，
+                        eNotifyAction eAction );
+
+BaseType_t xTaskNotifyIndexed( TaskHandle_t xTaskToNotify, 
+                            UBaseType_t uxIndexToNotify, 
+                            uint32_t ulValue， 
+                            eNotifyAction eAction );
+
+
+```
+
+### 内存管理
+
+FreeRTOS有自己管理内存的方法。内存管理的实现保存在FreeRTOS/Source/portable/MemMang下，一共5种方式
+
+heap_1.c	分配简单，时间确定	只分配、不回收
+heap_2.c	动态分配、最佳匹配	碎片、时间不定
+heap_3.c	调用标准库函数	速度慢、时间不定
+heap_4.c	相邻空闲内存可合并	可解决碎片问题、时间不定
+heap_5.c	在heap_4基础上支持分隔的内存块	可解决碎片问题、时间不定
+
+注意：除了heap_3的内存总大小是由链接器的配置决定，其他内存分配方案使用configTOTAL_HEAP_SIZE宏定义
+
+**pvPortMalloc/vPortFree**
+
+申请和释放内存
+
+```c
+void * pvPortMalloc( size_t xWantedSize );
+void vPortFree( void * pv );
+```
+
+**xPortGetFreeHeapSize**
+
+获取剩余堆内存大小。heap_3不支持该函数。
+
+```c
+size_t xPortGetFreeHeapSize( void );
+```
+
+**xPortGetMinimumEverFreeHeapSize**
+
+获取堆内存分配过程中，空闲内存最小的值。
+
+```c
+size_t xPortGetMinimumEverFreeHeapSize( void );
+```
+
+**vApplicationMallocFailedHook**
+
+内存分配失败时的钩子函数，需要定义configUSE_MALLOC_FAILED_HOOK = 1
+
+```c
+#define configUSE_MALLOC_FAILED_HOOK    (1)
+
+void vApplicationMallocFailedHook( void )
+{
+	taskDISABLE_INTERRUPTS();
+	for( ;; );
+}
+```
+
+**栈溢出检查**
+
+定义宏configCHECK_FOR_STACK_OVERFLOW，来开启栈溢出检查。此时需要定义栈溢出的钩子函数来确认是哪个地方栈溢出了。
+
+由于栈溢出检查会引入上下文切换开销，因此在开发/测试阶段外应该禁止该宏。
+
+configCHECK_FOR_STACK_OVERFLOW的值会印象栈检查的方法:
+
+configCHECK_FOR_STACK_OVERFLOW=1,RTOS内核会检查堆栈指针是否处于有效的堆栈空间内，如果越界则调用栈溢出钩子函数
+configCHECK_FOR_STACK_OVERFLOW=2,任务在创建时它的堆栈被已知的值填充，让任务退出运行状态时，RTOS内核可以检测栈最后16字节，检查这些已知值是否被其他操作覆盖。如果有覆盖，则调用栈溢出钩子函数。
+
+
+
+## 海曼红外图像传感器调试
+
+
+示例时序:
+
+```shell
+# 依次操作以下时序
+i2c_addr    reg_addr    value
+0x1A        0x01        0x01
+0x1A        0x03        0x0C
+0x1A        0x04        0x0C
+0x1A        0x05        0x0C
+0x1A        0x06        0x14
+0x1A        0x07        0x0C
+0x1A        0x08        0x0C
+0x1A        0x09        0x88
+
+0x1A        0x01        0x09
+0x1A        0x02        ??
+
+#> wait 30ms
+0x1A        0x02        ??
+0x1A        0x0A        PTAT1(MSB) PTAT1(LSB) P0,0(MSB) P0,0(LSB) ... Px,y(MSB) Px,y(LSB)
+0x1A        0x0B        PTAT2(MSB) PTAT2(LSB) P0,0(MSB) P0,0(LSB) ... Px,y(MSB) Px,y(LSB)
+0x1A        0x01        0X00
+```
+
+
+
+
+
+
 
 TODO:
 
