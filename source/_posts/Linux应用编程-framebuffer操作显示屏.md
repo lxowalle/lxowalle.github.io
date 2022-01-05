@@ -21,6 +21,9 @@ tags: Linux
 ​	下面的操作会从`/dev/fb0`读取当前显示屏的参数，然后通过mmap将显示区域映射到一个指针，这个指针指向了一块内存，读写这块内存的数据就等同于写入/读取显示屏的数据，非常简单。
 
 ```c
+#include <linux/fb.h>
+#include <sys/mman.h>
+
 int main ()   
 {  
     int fp=0;  
@@ -69,10 +72,24 @@ int main ()
     fbp =(char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fp,0);  
     if ((int)fbp == -1)  
     {    
-        printf ("Error: failed to map framebuffer device to memory./n");  
+        printf ("Error: failed to map framebuffer device to memory.\n");  
         exit (4);  
     }
     printf("Get virt mem = %p\n", fbp);  
+
+    /* 显示一块长宽为SHOW_SIZE的区域(每像素4字节的情况) */
+    #define SHOW_SIZE   (128)
+    for (int i = 0; i < SHOW_SIZE; i ++)
+    {
+        uint8_t *line = (uint8_t *)fbp + i * vinfo.xres * 4;
+        for (int j = 0; j < SHOW_SIZE; j ++)
+        {
+            line[j * 4] = buff[i * SHOW_SIZE + j];
+            line[j * 4 + 1] = buff[i * SHOW_SIZE + j];
+            line[j * 4 + 2] = buff[i * SHOW_SIZE + j];
+            line[j * 4 + 3] = 0xFF;
+        }
+    }
 
     /* 刷新显示（有些framebuffer实现了自刷新，就可以不调用这个api） */
     ioctl(fp, FBIOPAN_DISPLAY, &vinfo);
