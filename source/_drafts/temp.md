@@ -482,13 +482,13 @@ squash aaaa             # squash表示这个commit会被合并到前一个commit
 
 `_attribute__((constructor))`可以标记一个函数，让这个函数会在main()之前执行。
 ```c
-// 标记函数，该函数会在main之前被执行
+// 标记函数，该函数会在main之前被执行(默认优先级65535)
 _attribute__((constructor)) static void pre_main(void)
 {
     printf("Hello!\n");
 }
 
-// 标记函数，并赋予优先级(1~100保留？未验证)
+// 标记函数，并赋予优先级(范围0~65535，相同优先级时，先标记的函数优先执行)
 _attribute__((constructor(101))) static void pre_main1(void)
 {
     printf("Hello pre_main1!\n");
@@ -732,9 +732,9 @@ mf_qr_scan_ctl(QR_CTLSET_HANDLECB, sacn_and_config_wifi_cb);
 
 步骤：
 1. `git fsck --full`
-2. `find . type f -empty -delete -print`   ,目的是删除空文件，这行代码有可能会删掉有用的空文件，这时候可以选择手动删除空文件
-3. `tail -n 2 .git/logs/refs/heads/xxx`,获取xxx分支的最后两个提交
-4. `git update-ref HEAD +第二次分支hash值`,将HEAD指针指向最后第二提交
+2. `find . type f -empty -delete -print`   ,目的是删除空文件，如果不想删掉有用的空文件可以选择手动删除空文件(一般有用的空文件都被git追踪了，大部分情况不需要担心)
+3. `tail -n 2 .git/logs/refs/heads/xxx`,获取目标分支的最后两个提交，xxx填分支名称
+4. `git update-ref HEAD xxx`,将HEAD指针指向最后第二提交,xxx填第二个分支的hash值
 5. `git pull`,拉取代码
 6. 完成
 
@@ -1902,10 +1902,10 @@ BaseType_t xTaskNotifyGiveIndexed( TaskHandle_t xTaskToNotify,
                                 UBaseType_t uxIndexToNotify );  // 任务通知数组的索引数，最大不超过configTASK_NOTIFICATION_ARRAY_ENTRIES
 
 /* 接收通知 */
-uint32_t ulTask​​NotifyTake( BaseType_t xClearCountOnExit,
+uint32_t ulTaskNotifyTake( BaseType_t xClearCountOnExit,
                         TickType_t xTicksToWait );
 
-uint32_t ulTask​​NotifyTakeIndexed( UBaseType_t uxIndexToWaitOn,    // 任务通知数组的索引数，最大不超过configTASK_NOTIFICATION_ARRAY_ENTRIES
+uint32_t ulTaskNotifyTakeIndexed( UBaseType_t uxIndexToWaitOn,    // 任务通知数组的索引数，最大不超过configTASK_NOTIFICATION_ARRAY_ENTRIES
                                 BaseType_t xClearCountOnExit，  // 
                                 TickType_t xTicksToWait );      
 
@@ -1918,8 +1918,6 @@ BaseType_t xTaskNotifyIndexed( TaskHandle_t xTaskToNotify,
                             UBaseType_t uxIndexToNotify, 
                             uint32_t ulValue， 
                             eNotifyAction eAction );
-
-
 ```
 
 ### 内存管理
@@ -2016,10 +2014,52 @@ i2c_addr    reg_addr    value
 
 
 
+## 查看elf文件
+
+```shell
+readelf -s link_example.o   // 查看符号表
+objdump -r link_example.o   // 查看重定位表
+```
+
+## 适配ch341转uart的驱动
+https://github.com/allanbian1017/i2c-ch341-usb
+编译并安装ko后，可以使用iic设备文件来操作ch341a模块
+
+libusb函数说明：https://blog.csdn.net/wince_lover/article/details/70337809
+github示例代码：https://github.com/craftor/usb2iic/blob/master/Example/linux/ezusb.c
+
+## 配置ssh默认链接
+
+[vscode SSH 保存密码自动登录服务器](https://www.jianshu.com/p/cc1f599c8841)
+
+1. 生成本地RSA密钥
+2. 输入`ssh-copy-id -i ~/.ssh/id_rsa.pub username@192.168.2.22`
+3. 根据提示输入密码，并得到以下界面
+   ```shell
+    /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/Users/username/.ssh/id_rsa.pub"
+    /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+    /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+    username@192.168.2.22's password: 
+
+    Number of key(s) added:        1
+
+    Now try logging into the machine, with:   "ssh 'username@192.168.2.22'"
+    and check to make sure that only the key(s) you wanted were added.    
+   ```
+4. 完成，此时执行`ssh username@192.168.2.22`可以直接通过ssh登录远程主机
 
 
-
-TODO:
-
-
-1. UI
+Windows添加ssh密钥远程连接主机
+1. 生成ssh密钥,执行`ssh-keygen.exe -t rsa -C "lxowalle@outlook.com"`
+2. 在远程主机上添加本地密钥,执行` ssh-copy-id -i ~/.ssh/id_rsa.pub lxo@192.168.43.128`
+3. VSCODE上添加本地密钥路径:
+```shell
+Host 192.168.43.128
+  HostName 192.168.43.128
+  User lxo
+  IdentityFile "~/.ssh/id_rsa"
+# Host 任意填写
+# HostName 目标主机的地址或域名
+# User  登录时的用户名
+# IdentityFile 私钥文件路径
+```
