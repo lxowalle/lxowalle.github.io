@@ -11,6 +11,10 @@ tags:
 ## i2c应用编程
 
 ```c
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <fcntl.h>
 #include <linux/i2c-dev.h>
 
 /* 初始化iic设备 */
