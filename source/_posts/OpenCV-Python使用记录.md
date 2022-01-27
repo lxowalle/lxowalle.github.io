@@ -9,9 +9,10 @@ tags:
 [OpenCV官方手册](http://woshicver.com/)
 [测试资源下载](https://www.cnuseful.com/down/)
 
-## 安装
+## 一、安装
 
 **通过apt安装opencv-python**
+
 ```shell
 # python2(未测试)
 python2 -m pip install opencv-python    
@@ -23,7 +24,7 @@ sudo apt install python3-opencv
 **源码安装opencv-python**
 嫌麻烦，具体方法参考[手册](http://woshicver.com/SecondSection/1_4_%E5%9C%A8Ubuntu%E4%B8%AD%E5%AE%89%E8%A3%85OpenCV-Python/)
 
-## GUI操作
+## 二、GUI操作
 
 **显示/保存图片**
 
@@ -160,7 +161,7 @@ cv.imshow("img", img)
 cv.waitKey(0)
 ```
 
-#### 鼠标处理事件=>双击画圆,长点画矩形
+**鼠标处理事件=>双击画圆,长点画矩形**
 
 ```python
 import numpy as np
@@ -253,7 +254,7 @@ while(1):
 cv.destroyAllWindows()
 ```
 
-## 核心操作
+## 三、核心操作
 
 
 **图像的基本操作**
@@ -337,3 +338,313 @@ cv.imshow('img', img)
 cv.waitKey(0)
 cv.destroyAllWindows()
 ```
+
+**图像上的算法运算**
+
+```python
+import cv2 as cv
+import numpy as np
+
+def show_tmp_img(img):
+    cv.imshow('tmp', img)
+    cv.waitKey(0)
+
+# 加法
+x = np.uint8([250])
+y = np.uint8([10])
+print(cv.add(x, y))     # 结果255，250+10=260溢出，取临界值255
+print(x + y)            # 结果4，250+10=260溢出，取溢出值4
+
+# 图像融合
+img1 = cv.imread('test.jpg')
+img2 = cv.imread('test2.jpg')
+img3 = img1[100:400, 900:1200]
+img4 = img2[0:300, 0:300]
+dst = cv.addWeighted(img3, 0.5, img4, 0.5, 0)
+# cv.imshow('dst', dst)
+# cv.waitKey(0)
+
+# 按位运算，下面将img2作为logo插入到img1中
+rows,cols,channels = img2.shape                                 # 1. 获取要logo的尺寸
+roi = img1[0:rows, 0:cols]                                      # 2. 根据logo尺寸来截取RIO区域(RIO指感兴趣的区域)
+# show_tmp_img(roi)
+                                                                # 3. 取出logo图片背景区域
+img2gray = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)                 #   - 将logo转灰度图
+# show_tmp_img(img2gray)
+ret, mask = cv.threshold(img2gray, 50, 255, cv.THRESH_BINARY)   #   - 将logo二值化，取出需要显示的logo区域
+show_tmp_img(mask)
+mask_inv = cv.bitwise_not(mask)                                 #   - 取出logo背景区域(图像取反操作)
+# show_tmp_img(mask_inv)
+img1_bg = cv.bitwise_and(roi, roi, mask = mask_inv)             # 4. 将ROI的logo区域涂黑
+# show_tmp_img(img1_bg)
+img2_fg = cv.bitwise_and(img2, img2, mask=mask)                 # 5. 从logo图像提取logo区域
+show_tmp_img(img2_fg)
+dst = cv.add(img1_bg, img2_fg)                                  # 6. 将logo放入ROI并修改主图像
+show_tmp_img(dst)
+img1[0:rows, 0:cols] = dst
+show_tmp_img(img1)
+
+cv.destroyAllWindows()
+```
+
+**性能衡量与提升**
+
+```python
+import cv2 as cv
+
+en = cv.useOptimized()                      # 检查是否启用优化(默认启用)
+print("Use opetimized?", en)
+if en != True:
+    print("Enable opetimized")
+    cv.setUseOptimized(True)                # 设置是否启用优化
+
+img1 = cv.imread('test.jpg')                ### 测试代码执行时间
+e1 = cv.getTickCount()                      # 1. 开始时间
+
+for i in range(5, 49, 2):                   # 2. 执行过程
+    img1 = cv.medianBlur(img1, i)
+
+e2 = cv.getTickCount()                      # 3. 结束时间
+time = (e2 - e1) / cv.getTickFrequency()    # 4. 计算结果，单位s
+print(time)
+```
+
+## OPENCV中的图像处理
+
+**改变颜色空间**
+
+```python
+import cv2 as cv
+import numpy as np
+
+#### 改变颜色空间
+# 获取支持的颜色空间
+flags = [i for i in dir(cv) if i.startswith('COLOR_')]
+print(flags)
+
+#### 将BGR图像转HSV，并取出蓝色通道图像
+img = cv.imread('test.jpg')                     # 1. 获取BGR图像
+hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)        # 2. BGR转HSV
+
+lower_blue = np.array([110, 50, 50])            # 3. 提取蓝色部分的图像
+upper_blue = np.array([130, 255, 255])
+mask = cv.inRange(hsv, lower_blue, upper_blue)
+
+res = cv.bitwise_and(img, img, mask = mask)     # 4. 将提取的图片叠加到原图
+cv.imshow('img', img)
+cv.waitKey(0)
+cv.imshow('hsv', hsv)
+cv.waitKey(0)
+cv.imshow('mask', mask)
+cv.waitKey(0)
+cv.imshow('res', res)
+cv.waitKey(0)
+cv.destroyAllWindows()
+
+#### 获取BGR颜色空间对应HSV颜色空间的值
+b = np.uint8([[[255, 0, 0]]])
+g = np.uint8([[[0, 255, 0]]])
+r = np.uint8([[[0, 0, 255]]])
+hsv_b = cv.cvtColor(b, cv.COLOR_BGR2HSV)
+hsv_g = cv.cvtColor(g, cv.COLOR_BGR2HSV)
+hsv_r = cv.cvtColor(r, cv.COLOR_BGR2HSV)
+print(hsv_b, hsv_g, hsv_r)
+
+```
+
+**图像的几何变换**
+
+包括：
+
+- 缩放
+- 平移
+- 旋转
+- 放射变换
+
+```python
+# 缩放
+img = cv.imread('test.jpg')
+h1,w1 = img.shape[:2]
+print(h1, w1)
+
+# interpolation来设置插值方法
+#   - cv.INTER_LINEAR   线性插值(默认)
+#   - cv.INTER_NEAREST  最邻近插值
+#   - cv.INTER_AREA     基于像素关系进行重采样
+#   - cv.INTER_CUBIC    4×4邻域双3次插值
+#   - cv.INTER_LANCZOS4 8×8邻域兰索斯插值
+img = cv.resize(img, None, fx = 0.5, fy = 0.5, interpolation=cv.INTER_CUBIC)    # 缩小为0.5倍
+h2,w2 = img.shape[:2]
+print("img size:", h2, w2)
+
+img = cv.resize(img, None, fx=2, fy=2, interpolation=cv.INTER_CUBIC)            # 放大为2倍
+h2,w2 = img.shape[:2]
+print("img size:", h2, w2)
+
+img = cv.resize(img, (500, 500))                                                # 重置尺寸为(500, 500)
+h2,w2 = img.shape[:2]
+print("img size:", h2, w2)
+
+# 平移
+img = cv.imread('test.jpg')
+rows,cols = img.shape[:2]
+print("img size:", rows, cols)
+M = np.float32([[1,0,100], [0,1,100]])                                          # 生成2*3的变换矩阵M
+                                                                                #   M = [ 1 0 tx ]
+                                                                                #       [ 0 1 ty ]
+                                                                                #   其中tx表示x方向的偏移，ty表示y方向的偏移
+dst = cv.warpAffine(img, M, (cols, rows))                                       # 根据M实现平移
+
+
+# 旋转                              
+M = cv.getRotationMatrix2D(((cols - 1) / 2.0, (rows - 1) / 2.0), 45, 0.5)       # 生成变换矩阵M，可以设置旋转中心，旋转角度，缩放比例
+                                                                                # 方法1:
+                                                                                #   M = [ cosθ  -sinθ ]
+                                                                                #       [ sinθ   cosθ ]
+                                                                                #   其中θ表示缩放角度
+                                                                                # 方法2:
+                                                                                #   M = [ α  β  (1-α)*x - β * y ]
+                                                                                #       [-β  α  (1-α)*y + β * x ]
+                                                                                #   其中 
+                                                                                #       α = scale * cosθ    
+                                                                                #       β = scale * sinθ
+                                                                                #   θ表示旋转角度，x表示旋转中心x坐标，y表示旋转中心y坐标，scale表示缩放倍数
+dst = cv.warpAffine(img, M, (cols, rows))                                       # 根据M实现旋转
+cv.imshow('img', dst)
+cv.waitKey(0)
+
+# 放射变换
+from matplotlib import pyplot as plt
+pts1 = np.float32([[50, 50], [200, 50], [50, 200]])
+pts2 = np.float32([[10, 100], [200, 50], [100, 250]])
+M = cv.getAffineTransform(pts1, pts2)
+dst = cv.warpAffine(img, M, (cols, rows))
+plt.subplot(121), plt.imshow(img), plt.title('Input')
+plt.subplot(122), plt.imshow(dst), plt.title('Output')
+plt.show()
+
+# 透视变换，通过4个点获取目标区域的视图，需要保证变换前后直线仍然保持直线
+pts1 = np.float32([[56, 65], [368, 52], [28, 387], [389, 390]])                 # 通过4个坐标选择需要变换的区域
+pts2 = np.float32([[0,0], [300, 0], [0, 300], [300, 300]])                      # 通过4个坐标设置变换后的区域
+M = cv.getPerspectiveTransform(pts1, pts2)
+dst = cv.warpPerspective(img, M, (300, 300))
+plt.subplot(121), plt.imshow(img), plt.title('Input')
+plt.subplot(122), plt.imshow(dst), plt.title('Output')
+plt.show()
+
+cv.destroyAllWindows()
+```
+
+**图像阈值**
+
+包括：
+
+- 简单的阈值过滤
+- 自适应阈值
+- Otsu二值化
+
+```python
+# 简单阈值
+# 简单的阈值类型：
+# cv2.THRESH_BINARY         低于阈值的像素点灰度值置为0；高于阈值置为参数3
+# cv2.THRESH_BINARY_INV     大于阈值的像素点灰度值置为0；小于阈值置为参数3
+# cv2.THRESH_TRUNC          小于阈值的像素点灰度值不变，大于阈值的像素点置为该阈值
+# cv2.THRESH_TOZERO         小于阈值的像素点灰度值不变，大于阈值的像素点置为0,其中参数3任取
+# cv2.THRESH_TOZERO_INV     大于阈值的像素点灰度值不变，小于阈值的像素点置为0,其中参数3任取
+img = cv.imread('test.jpg', cv.IMREAD_GRAYSCALE)
+img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+ret,thresh1 = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
+ret,thresh2 = cv.threshold(img, 127, 255, cv.THRESH_BINARY_INV)
+ret,thresh3 = cv.threshold(img, 127, 255, cv.THRESH_TRUNC)
+ret,thresh4 = cv.threshold(img, 127, 255, cv.THRESH_TOZERO)
+ret,thresh5 = cv.threshold(img, 127, 255, cv.THRESH_TOZERO_INV)
+
+plt.subplot(231),plt.imshow(img),plt.title('NORMAL')
+plt.subplot(232),plt.imshow(thresh1),plt.title('THRESH_BINARY')
+plt.subplot(233),plt.imshow(thresh2),plt.title('THRESH_BINARY_INV')
+plt.subplot(234),plt.imshow(thresh3),plt.title('THRESH_TRUNC')
+plt.subplot(235),plt.imshow(thresh4),plt.title('THRESH_TOZERO')
+plt.subplot(236),plt.imshow(thresh5),plt.title('THRESH_TOZERO_INV')
+plt.show()
+
+# 自适应阈值
+img = cv.imread('test.jpg', cv.IMREAD_GRAYSCALE)
+thresh1 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C , cv.THRESH_BINARY, 5, 2)
+# cv.imshow('th', thresh1)
+# cv.waitKey(0)
+
+thresh1 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C , cv.THRESH_BINARY_INV, 5, 2)
+# cv.imshow('th', thresh1)
+# cv.waitKey(0)
+# cv.destroyWindow('th')
+
+# Otsu的二值化
+img = cv.imread('test.jpg', 0)
+ret, th1 = cv.threshold(img, 127, 255, cv.THRESH_BINARY)                    # 全局阈值
+ret, th2 = cv.threshold(img, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)     # Otsu阈值
+blur = cv.GaussianBlur(img, (5, 5), 0)
+ret, th3 = cv.threshold(blur, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)    # 高斯滤波，再用Otsu阈值
+images = [  img, 0, th1,
+            img, 0, th2,
+            blur, 0, th3]
+titles = ['Original Noisy Image','Histogram','Global Thresholding (v=127)',
+          'Original Noisy Image','Histogram',"Otsu's Thresholding",
+          'Gaussian filtered Image','Histogram',"Otsu's Thresholding"]
+for i in range(3):
+    plt.subplot(3,3,i*3+1),plt.imshow(images[i*3],'gray')
+    plt.title(titles[i*3]), plt.xticks([]), plt.yticks([])
+    plt.subplot(3,3,i*3+2),plt.hist(images[i*3].ravel(),256)
+    plt.title(titles[i*3+1]), plt.xticks([]), plt.yticks([])
+    plt.subplot(3,3,i*3+3),plt.imshow(images[i*3+2],'gray')
+    plt.title(titles[i*3+2]), plt.xticks([]), plt.yticks([])
+plt.show()
+cv.destroyAllWindows()
+```
+
+**图像平滑**
+
+包括：
+
+- 平均滤波
+- 中值滤波
+- 高斯滤波
+- 双边滤波
+
+```python
+#### 图像平滑
+
+# 2D卷积(图像过滤)
+img = cv.imread('test.jpg')
+kernel = np.ones((5,5), np.float32) / 25                    # 除以25是因为矩阵有25个元素，方便后面平均值计算
+# print(kernel)
+dst = cv.filter2D(img, -1, kernel)                          # 将取每个像素周围的25个元素的平均值
+# cv.imshow('temp', dst)
+# cv.waitKey(0)
+
+# 图像模糊，共4种模糊技术
+# 1. 平均,提取内核区域的平均值作为中心像素值
+blur = cv.blur(img, (5, 5))                                 # 
+# cv.imshow('temp', blur)
+# cv.waitKey(0)
+
+# 2. 高斯模糊，采用像素周围的邻域并找到其高斯加权平均值
+blur = cv.GaussianBlur(img, (5, 5), 0)                      # 高斯模糊
+# cv.imshow('temp', blur)
+# cv.waitKey(0)
+
+blur = cv.GaussianBlur(img, (5, 5), sigmaX=50, sigmaY=50)   # 高斯模糊
+# cv.imshow('temp', img)
+# cv.waitKey(0)
+
+# 3. 中值模糊，提取内核区域的中值作为中心像素值
+blur = cv.medianBlur(img, 7)                                # 中值模糊
+# cv.imshow('temp', blur)
+# cv.waitKey(0)
+
+# 4. 双边滤波,一种强度较差的高斯函数，仅仅考虑强度与中心像素相似的像素的模糊。可以保留边缘
+blur = cv.bilateralFilter(img, 25, 75, 75)                  # 双边滤波
+cv.imshow('temp', blur)
+cv.waitKey(0)
+
+```
+
