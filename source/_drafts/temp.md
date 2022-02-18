@@ -2063,3 +2063,49 @@ Host 192.168.43.128
 # User  登录时的用户名
 # IdentityFile 私钥文件路径
 ```
+
+
+#### RISCV 汇编
+
+[RISCV 手册](http://riscvbook.com/chinese/RISC-V-Reader-Chinese-v2p1.pdf)
+[RISCV 汇编伪指令](http://events.jianshu.io/p/3f7387faceef)
+[RISCV 汇编特权指令](https://juejin.cn/post/6891962672892837901)
+
+
+#### Bootloader的说明
+
+[bootloader 详细介绍](https://www.cnblogs.com/anandexuechengzhangzhilu/p/10719869.html)
+
+
+#### lwip移植
+
+[LWIP官网地址](https://savannah.nongnu.org/projects/lwip/)
+[GIT下载地址](https://git.savannah.gnu.org/git/lwip.git)
+
+#### 更新fork的仓库
+
+```shell
+# 1. 进入本地仓库
+cd pjproject
+# 2. 执行git remote -v查看当前分支
+lxo@ubuntu:~/pjproject$ git remote -v
+origin  git@github.com:lxowalle/pjproject.git (fetch)
+origin  git@github.com:lxowalle/pjproject.git (push)
+
+# 3. 上述是没有上游分支的，所以先添加上游分支
+lxo@ubuntu:~/pjproject$ git remote add upstream https://github.com/pjsip/pjproject.git
+lxo@ubuntu:~/pjproject$ git remote -v
+origin  git@github.com:lxowalle/pjproject.git (fetch)
+origin  git@github.com:lxowalle/pjproject.git (push)
+upstream        https://github.com/pjsip/pjproject.git (fetch)
+upstream        https://github.com/pjsip/pjproject.git (push)
+
+# 4. 拉取上游分支最新代码
+lxo@ubuntu:~/pjproject$ git fetch upstream 
+
+# 5. 将上游分支的代码合并到本地分支
+lxo@ubuntu:~/pjproject$ git merge upstream/master
+
+# 6. 上推拉取的仓库
+lxo@ubuntu:~/pjproject$ git push
+```
