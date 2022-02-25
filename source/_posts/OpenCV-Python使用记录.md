@@ -19,6 +19,8 @@ python2 -m pip install opencv-python
 
 # python3
 sudo apt install python3-opencv    
+sudo apt install python3-pip
+sudo pip3 install matplotlib
 ```
 
 **源码安装opencv-python**
@@ -646,5 +648,71 @@ blur = cv.bilateralFilter(img, 25, 75, 75)                  # 双边滤波
 cv.imshow('temp', blur)
 cv.waitKey(0)
 
+```
+
+
+
+**形态学转变**
+
+包括：
+
+- 侵蚀
+- 扩张
+- 开运算（侵蚀=>扩张）
+- 闭运算（扩张=>侵蚀）
+- 梯度
+- 顶帽
+- 黑帽
+- 获取不同形状内核
+
+```python
+img = cv.imread('j.png', 0)
+kernel = np.ones((5,5), np.uint8)
+kernel2 = np.ones((9,9), np.uint8)
+cv.imshow('img', img)
+cv.waitKey(0)
+
+# 侵蚀，卷积过程中对kernel内所有像素判断，如果全为1时，认为中心像素为1，否则为0
+erosion = cv.erode(img, kernel, iterations = 1)
+cv.imshow('img', erosion)
+cv.waitKey(0)
+
+# 扩张，卷积过程对kernel内所有像素判断，如果任意一个像素为1，认为中心像素为1，否则为0
+dilation = cv.dilate(img, kernel, iterations = 1)
+cv.imshow('img', dilation)
+cv.waitKey(0)
+
+# 开运算，实际就是侵蚀后再扩张，一般用来消除RIO外部的噪音
+opening = cv.morphologyEx(img, cv.MORPH_OPEN, kernel)
+cv.imshow('img', opening)
+cv.waitKey(0)
+
+# 闭运算，实际就是扩张后在侵蚀，一般用来消除RIO内部的噪音
+closing = cv.morphologyEx(img, cv.MORPH_CLOSE, kernel)
+cv.imshow('img', closing)
+cv.waitKey(0)
+
+# 梯度,从结果来看，获取了目标的轮廓
+gradient = cv.morphologyEx(img, cv.MORPH_GRADIENT, kernel)
+cv.imshow('img', gradient)
+cv.waitKey(0)
+
+# 顶帽,将输入图像减去输入图像的开运算
+tophat = cv.morphologyEx(img, cv.MORPH_TOPHAT, kernel2)
+cv.imshow('img', tophat)
+cv.waitKey(0)
+
+# 黑帽，将输如图像先去输入图像的闭运算
+blackhat = cv.morphologyEx(img, cv.MORPH_BLACKHAT, kernel)
+cv.imshow('img', blackhat)
+cv.waitKey(0)
+
+# 结构元素，用来获取不同形状的内核(矩形，椭圆形，十字形)
+arr = cv.getStructuringElement(cv.MORPH_RECT, (5,5))    # 矩形
+print(arr)
+arr = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5,5))    # 椭圆形
+print(arr)
+arr = cv.getStructuringElement(cv.MORPH_CROSS, (5,5))    # 十字形
+print(arr)
 ```
 
