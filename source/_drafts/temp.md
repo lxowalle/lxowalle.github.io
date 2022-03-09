@@ -2147,3 +2147,42 @@ registry = "git://crates.rustcc.cn/crates.io-index"
 #### 解决Rust执行cargo build时提示Waiting for File Lock on Package Cache Lock的问题
 
 删除`~/.cargo/.package-cache`文件
+#### --
+
+```c
+#if 1
+    uint8_t *buffer = pvPortMalloc(FACEDB_SECTOR_SIZE);
+    if (!buffer) {printf("buffer is BULL\n"); exit(-1);}
+
+    int fd = aos_open("/romfs/facedb", O_RDWR);
+    if (fd)
+    {
+        int j = 0x01;
+        int len = 0;
+        for (int i = DB_START_ADDRESS; i < DB_START_ADDRESS + DB_REAL_ADDR_SIZE; i += FACEDB_SECTOR_SIZE)
+        {
+            memset(buffer, j, FACEDB_SECTOR_SIZE);
+
+            len = db_device_write(i, buffer, FACEDB_SECTOR_SIZE);
+            if (len <= 0) {printf("l:%d  i:%#x j:%d len:%d\n", __LINE__, i, j, len); exit(-1);}
+
+            len = db_device_read(i, buffer, FACEDB_SECTOR_SIZE);
+            if (len <= 0) {printf("l:%d  i:%#x j:%d len:%d\n", __LINE__, i, j, len); exit(-1);}
+
+            for (int k = 0; k < FACEDB_SECTOR_SIZE; k ++)
+            {
+                if (buffer[k] != j)
+                {
+                    printf("l:%d  i:%#x j:%d k:%d  data:%d\n", __LINE__, i, j, k, buffer[i]);
+                    exit(-1);
+                }
+            }
+            j ++;
+        }
+        aos_close(fd);
+        vPortFree(buffer);
+    }
+
+    exit(-1);
+#endif
+```
