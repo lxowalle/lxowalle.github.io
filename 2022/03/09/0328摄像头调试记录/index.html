@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>0328摄像头调试记录 | lxowalle</title><meta name="keywords" content="个人"><meta name="author" content="lxowalle"><meta name="copyright" content="lxowalle"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、简述调试0328摄像头需要使用两套协议：IIC和DVP，IIC协议用来读写摄像头内部的寄存器来控制摄像头的功能，DVP协议用来接收摄像头返回的图像数据。需要注意IIC协议是上位机作为主机，Sensor作为从机；DVP协议是上位机作为从机，Sensor作为主机。 二、协议调试协议的调试过程：  核对引脚连接 实现正常启动和停止Sensor 实现IIC通信并配置(调试)Sensor的功能 基于DV">
+<meta property="og:type" content="article">
+<meta property="og:title" content="0328摄像头调试记录">
+<meta property="og:url" content="https://lxowalle.github.io/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="lxowalle">
+<meta property="og:description" content="一、简述调试0328摄像头需要使用两套协议：IIC和DVP，IIC协议用来读写摄像头内部的寄存器来控制摄像头的功能，DVP协议用来接收摄像头返回的图像数据。需要注意IIC协议是上位机作为主机，Sensor作为从机；DVP协议是上位机作为从机，Sensor作为主机。 二、协议调试协议的调试过程：  核对引脚连接 实现正常启动和停止Sensor 实现IIC通信并配置(调试)Sensor的功能 基于DV">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/liuxo/images/raw/master/blog/34.png">
+<meta property="article:published_time" content="2022-03-09T15:44:56.013Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:56.013Z">
+<meta property="article:author" content="lxowalle">
+<meta property="article:tag" content="个人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/liuxo/images/raw/master/blog/34.png"><link rel="shortcut icon" href="/img/dog_head.png"><link rel="canonical" href="https://lxowalle.github.io/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":false,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '0328摄像头调试记录',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-03-09 23:44:56'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/icon.css"><link rel="stylesheet" href="/css/user.css"><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="lxowalle" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dog.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">lxowalle</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">0328摄像头调试记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-03-09T15:44:56.013Z" title="发表于 2022-03-09 23:44:56">2022-03-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-03-09T15:44:56.013Z" title="更新于 2022-03-09 23:44:56">2022-03-09</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="0328摄像头调试记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h2 id="一、简述"><a href="#一、简述" class="headerlink" title="一、简述"></a>一、简述</h2><p>调试0328摄像头需要使用两套协议：IIC和DVP，IIC协议用来读写摄像头内部的寄存器来控制摄像头的功能，DVP协议用来接收摄像头返回的图像数据。需要注意IIC协议是上位机作为主机，Sensor作为从机；DVP协议是上位机作为从机，Sensor作为主机。</p>
+<h2 id="二、协议调试"><a href="#二、协议调试" class="headerlink" title="二、协议调试"></a>二、协议调试</h2><p>协议的调试过程：</p>
+<ol>
+<li>核对引脚连接</li>
+<li>实现正常启动和停止Sensor</li>
+<li>实现IIC通信并配置(调试)Sensor的功能</li>
+<li>基于DVP协议接收Sensor的数据</li>
+</ol>
+<h3 id="2-1-核对引脚连接"><a href="#2-1-核对引脚连接" class="headerlink" title="2.1 核对引脚连接"></a>2.1 核对引脚连接</h3><p>需要核对的引脚有：SCL、SDA、VSYNC、HSYNC、PCLK、D&lt;7,0&gt;、MCLK、RESET、PWDN、VDD、GND</p>
+<ul>
+<li>SCL、SDA：IIC协议的信号线，SCL是同步时钟线，SDA是数据线。</li>
+<li>VSYNC、HSYNC、PCLK、D&lt;7,0&gt;：DVP协议的信号线，VSYNC是帧同步信号(默认低电平有效)，HSYNC是行同步信号(默认低电平有效)、PCLK是同步时钟信号(默认下降沿有效)、D&lt;7,0&gt;是8根数据线。数据线的数据在PCLK有效(默认下降沿)时捕获。</li>
+<li>MCLK：Sensor的时钟源，需要外部提供，一般为24MHz。如果没有提供该时钟源Sensor将无法工作。</li>
+<li>RESET：Sensor的复位引脚，低电平有效，即低电平时进入复位状态。复位状态Sensor无法工作。(部分Sensor在内部已经将RESET跟PWDN接到一起，操作PWDN时同时可以对芯片复位)</li>
+<li>PWDN：Sensor的休眠脚，高电平进入休眠模式，低电平进入工作模式。休眠模式Sensor无法工作。</li>
+<li>VDD、GND：最后Sensor的电源和地，这部分引脚需要参考<a target="_blank" rel="noopener" href="https://mangopi.cc/_media/gc0328c_datasheet_released_v1.0_20140930.pdf">数据手册</a>的说明来连接。</li>
+</ul>
+<h3 id="2-2-实现正常启动和停止Sensor"><a href="#2-2-实现正常启动和停止Sensor" class="headerlink" title="2.2 实现正常启动和停止Sensor"></a>2.2 实现正常启动和停止Sensor</h3><p>Sensor在启动和停止时对MCLK、RESET、PWDN这三根信号线有一定的时序要求，有时候这部分时序是必要的，否则Sensor可能会无法正常工作。下面通过参考<a target="_blank" rel="noopener" href="https://mangopi.cc/_media/gc0328c_datasheet_released_v1.0_20140930.pdf">数据手册</a>提供的参考时序时序来启动和停止Sensor：</p>
+<p><strong>1. 启动Sensor</strong></p>
+<p>启动时序参考：<br><img src="../assets/0328_poweron.png"></p>
+<p>小结：</p>
+<ol>
+<li>拉高PWDN，拉低RESET，进入复位状态，延时50ms</li>
+<li>拉高RESET，退出复位状态</li>
+<li>开始输出MCLK时钟(24MHz左右),延时50ms</li>
+<li>拉低PWDN，进入工作模式</li>
+<li>开始IIC的操作</li>
+</ol>
+<p>PS:</p>
+<blockquote>
+<p>上面时序图中IOVDD、AVDD28是IO电源和主电源，实际应用中一般不方便控制，因此可以使用RESET来代替这个过程</p>
+</blockquote>
+<p><strong>2. 停止Sensor</strong></p>
+<p>停止时序参考：<br><img src="../assets/0328_poweroff.png"></p>
+<p>小结：</p>
+<ol>
+<li>拉高PWDN，进入休眠模式</li>
+<li>停止输出MCLK时钟</li>
+<li>拉低RESET，进入复位状态</li>
+</ol>
+<p>PS:</p>
+<blockquote>
+<p>这里同理使用了RESET来代替IOVDD和AVDD28的功能</p>
+</blockquote>
+<h3 id="2-3-基于IIC协议向Sensor发起通信并配置-调试-Sensor的功能"><a href="#2-3-基于IIC协议向Sensor发起通信并配置-调试-Sensor的功能" class="headerlink" title="2.3 基于IIC协议向Sensor发起通信并配置(调试)Sensor的功能"></a>2.3 基于IIC协议向Sensor发起通信并配置(调试)Sensor的功能</h3><p>使用IIC协议的前提需要正确的启动Sensor，否则Senor不能正常处理IIC数据。</p>
+<p><strong>1. 实现IIC协议正常读写</strong></p>
+<p>调试IIC时，一般保证以下情况后，IIC就可以正常读写：</p>
+<ol>
+<li>保证电路连接正常，主要参考数据手册</li>
+<li>保证Sensor正常启动，参考上一节的启动时序</li>
+<li>保证在IIC通信时，MCLK信号存在稳定时钟(一般24MHz左右)，且PWDN保持低电平，RESET保持高电平</li>
+<li>保证IIC时序正确，可以通过逻辑分析仪来判断和分析</li>
+</ol>
+<p><strong>2. 配置Sensor的功能</strong></p>
+<p>配置Sensor的功能也就是通过IIC通信来读写Sensor的寄存器。一般情况各类Sensor都会使用一个寄存器初始化序列来更新Sensor的默认配置，这个序列包括了Sensor各个寄存器的地址和值。每次启动摄像头之后都需要更新Sensor的配置。</p>
+<p>关于Sensor的寄存器对应功能：</p>
+<blockquote>
+<p>待补充</p>
+</blockquote>
+<h3 id="2-4-实现IIC通信并配置-调试-Sensor的功能"><a href="#2-4-实现IIC通信并配置-调试-Sensor的功能" class="headerlink" title="2.4 实现IIC通信并配置(调试)Sensor的功能"></a>2.4 实现IIC通信并配置(调试)Sensor的功能</h3><p>当Sensor的寄存器正确配置后，Sensor会开始捕获图像，每捕获一帧图像后通过DVP协议先按字节发送，直到发送完一行，再切换到下一行继续发送，直到发送完一帧图像后Sensor开始捕捉下一帧图像，捕捉完后再循环上面的步骤。这个过程由Sensor主动控制。</p>
+<p>关于DVP协议涉及的信号线VSYNC、HSYNC、PCLK、D&lt;7,0&gt;的说明如下：</p>
+<ul>
+<li>D&lt;7:0&gt;：Sensor发送一个字节数据时，会将D&lt;7,0&gt;的引脚电平设置为与该字节对应的值。</li>
+<li>PCLK：Sensor发送完一字节数据后，会将PCLK引脚拉低来表示一字节数据发送完成。</li>
+<li>HSYNC：Sensor发送一帧数据的过程中，发送完这帧数据的某一行，会将HSYNC引脚拉低来表示一行数据已经发送完成。</li>
+<li>VSYNC：当Sensor发送完一帧数据后，会将VSYNC引脚拉低来表示一帧数据已经发送完成。</li>
+</ul>
+<p>接收DVP数据的细节：</p>
+<blockquote>
+<p>待补充</p>
+</blockquote>
+<p>小节：</p>
+<ol>
+<li>Sensor每捕获到一张图像就会主动下发图像，一张图像被称为一帧图像</li>
+<li>Sensor发送图像的方式为：从起始行(默认从下往上)开始，每发送一字节将PCLK拉低；每发送完一行数据将HSYNC拉低，并默认开始发送下一行数据，直到一帧数据发送完；每发送完一帧数据，将VSYNC拉低，并开始捕获下一帧数据。</li>
+</ol>
+<p>PS:</p>
+<blockquote>
+<ol>
+<li>需要注意在接收Sensor数据时，所有信号线的状态都是被动接收的，也就是说VSYNC、HSYNC、PCLK、D&lt;7,0&gt;对应引脚都会配置为输入模式，此时Sensor占有DVP时序的控制权。</li>
+<li>关于DVP IO有关的寄存器：<br>寄存器P0:0x24，配置HSYNC、VSYNC、D&lt;7:0&gt;、PCLK的输出驱动能力；<br>寄存器0xf1，使能VSYNC、HSYNC、PCLK输出；<br>寄存器0xf2，使能D&lt;7,0&gt;输出；<br>寄存器P0:0x46，配置VSYNC(默认低电平有效)、HSYNC(默认低电平有效)、PCLK极性(默认下降沿有效)。</li>
+</ol>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">lxowalle</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lxowalle.github.io/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/">https://lxowalle.github.io/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://lxowalle.github.io" target="_blank">lxowalle</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://gitee.com/liuxo/images/raw/master/blog/34.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/01/26/OpenCV-Python%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="https://gitee.com/liuxo/images/raw/master/blog/34.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">OpenCV-Python使用记录</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dog.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">lxowalle</div><div class="author-info__description">靠枕</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/lxowalle"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/lxowalle" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:lxowalle@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://u.wechat.com/EAk7gmoi55GTsWcWwPHT7N0" target="_blank" title="Wechat"><i class="iconfont icon-wechat1"></i></a><a class="social-icon" href="https://wpa.qq.com/msgrd?v=3&amp;uin=1024623077&amp;site=qq&amp;menu=yes" target="_blank" title="QQ"><i class="iconfont icon-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8D%8F%E8%AE%AE%E8%B0%83%E8%AF%95"><span class="toc-number">2.</span> <span class="toc-text">二、协议调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A0%B8%E5%AF%B9%E5%BC%95%E8%84%9A%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 核对引脚连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%AE%9E%E7%8E%B0%E6%AD%A3%E5%B8%B8%E5%90%AF%E5%8A%A8%E5%92%8C%E5%81%9C%E6%AD%A2Sensor"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 实现正常启动和停止Sensor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%9F%BA%E4%BA%8EIIC%E5%8D%8F%E8%AE%AE%E5%90%91Sensor%E5%8F%91%E8%B5%B7%E9%80%9A%E4%BF%A1%E5%B9%B6%E9%85%8D%E7%BD%AE-%E8%B0%83%E8%AF%95-Sensor%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 基于IIC协议向Sensor发起通信并配置(调试)Sensor的功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%AE%9E%E7%8E%B0IIC%E9%80%9A%E4%BF%A1%E5%B9%B6%E9%85%8D%E7%BD%AE-%E8%B0%83%E8%AF%95-Sensor%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 实现IIC通信并配置(调试)Sensor的功能</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/" title="0328摄像头调试记录"><img src="https://gitee.com/liuxo/images/raw/master/blog/34.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0328摄像头调试记录"/></a><div class="content"><a class="title" href="/2022/03/09/0328%E6%91%84%E5%83%8F%E5%A4%B4%E8%B0%83%E8%AF%95%E8%AE%B0%E5%BD%95/" title="0328摄像头调试记录">0328摄像头调试记录</a><time datetime="2022-03-09T15:44:56.013Z" title="发表于 2022-03-09 23:44:56">2022-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/26/OpenCV-Python%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/" title="OpenCV-Python使用记录"><img src="https://gitee.com/liuxo/images/raw/master/blog/34.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="OpenCV-Python使用记录"/></a><div class="content"><a class="title" href="/2022/01/26/OpenCV-Python%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/" title="OpenCV-Python使用记录">OpenCV-Python使用记录</a><time datetime="2022-01-26T03:59:22.000Z" title="发表于 2022-01-26 11:59:22">2022-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/camera%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86/" title="camera基础原理"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="camera基础原理"/></a><div class="content"><a class="title" href="/2022/01/17/camera%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86/" title="camera基础原理">camera基础原理</a><time datetime="2022-01-17T08:34:44.000Z" title="发表于 2022-01-17 16:34:44">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/12/20/%E5%AE%9E%E7%8E%B0%E8%A7%A6%E5%B1%8F%E4%BA%94%E7%82%B9%E6%A0%A1%E5%87%86/" title="实现触屏五点校准"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="实现触屏五点校准"/></a><div class="content"><a class="title" href="/2021/12/20/%E5%AE%9E%E7%8E%B0%E8%A7%A6%E5%B1%8F%E4%BA%94%E7%82%B9%E6%A0%A1%E5%87%86/" title="实现触屏五点校准">实现触屏五点校准</a><time datetime="2021-12-20T11:29:55.000Z" title="发表于 2021-12-20 19:29:55">2021-12-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/26/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-i2c%E5%BA%94%E7%94%A8/" title="Linux应用编程-i2c应用"><img src="https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux应用编程-i2c应用"/></a><div class="content"><a class="title" href="/2021/11/26/Linux%E5%BA%94%E7%94%A8%E7%BC%96%E7%A8%8B-i2c%E5%BA%94%E7%94%A8/" title="Linux应用编程-i2c应用">Linux应用编程-i2c应用</a><time datetime="2021-11-26T03:05:04.000Z" title="发表于 2021-11-26 11:05:04">2021-11-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By lxowalle</div><div class="footer_custom_text"><p><a style="margin-inline:5px"target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&logo=hexo" title="博客框架为 Hexo" alt="HEXO"></a><a style="margin-inline:5px"target="_blank" href="https://butterfly.js.org/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender" title="主题采用 Butterfly" alt="Butterfly"></a><a style="margin-inline:5px"target="_blank" href="https://www.jsdelivr.com/"><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&logo=jsDelivr" title="本站使用 Jsdelivr 为静态资源提供CDN加速" alt="Jsdelivr"></a><a style="margin-inline:5px"target="_blank" href="https://github.com/"><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub" title="本站项目由 GitHub 托管" alt="GitHub"></a><a style="margin-inline:5px"target="_blank"href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&logo=Claris" alt="img" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可"></a></p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/mouse_snow.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start -->
+  <script data-pjax src="https://cdn.jsdelivr.net/gh/Zfour/hexo-github-calendar@1.16/hexo_githubcalendar.js"></script>
+  <script data-pjax>
+        function GithubCalendarConfig(){
+            var git_githubapiurl ="https://python-github-calendar-api.vercel.app/api?lxowalle";
+            var git_color =['#e4dfd7', '#f9f4dc', '#f7e8aa', '#f7e8aa', '#f8df72', '#fcd217', '#fcc515', '#f28e16', '#fb8b05', '#d85916', '#f43e06'];
+            var git_user ="lxowalle";
+            var parent_div_git = document.getElementById('recent-posts');
+            var git_div_html = '<div class="recent-post-item" style="width:100%;height:auto;padding:10px;"><div id="github_loading" style="width:10%;height:100%;margin:0 auto;display: block"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 50 50" style="enable-background:new 0 0 50 50" xml:space="preserve"><path fill="#d0d0d0" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z" transform="rotate(275.098 25 25)"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform></path></svg></div><div id="github_container"></div></div>';
+            if(parent_div_git && location.pathname =='/'){
+                console.log('已挂载github calendar')
+                // parent_div_git.innerHTML=git_div_html+parent_div_git.innerHTML // 无报错，但不影响使用(支持pjax跳转)
+                parent_div_git.insertAdjacentHTML("afterbegin",git_div_html) // 有报错，但不影响使用(支持pjax跳转)
+            };
+            GithubCalendar(git_githubapiurl,git_color,git_user)
+        }
+        if(document.getElementById('recent-posts')){
+            GithubCalendarConfig()
+        }
+    </script>
+    <style>#github_container{min-height:280px}@media screen and (max-width:650px) {#github_container{background-image:;min-height:0px}}</style>
+    <style>undefined</style><!-- hexo injector body_end end --></body></html>
