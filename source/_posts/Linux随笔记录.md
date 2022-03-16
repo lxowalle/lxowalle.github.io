@@ -397,7 +397,7 @@ sudo vim /etc/samba/smb.conf
 # 添加smb.conf内容，这里是为了让外部能访问软链接
 [global]
         follow symlinks = yes
-        wide link = yes
+        wide links = yes
         unix extensions = no
         
 # 重启samba服务
