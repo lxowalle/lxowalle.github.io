@@ -2040,9 +2040,9 @@ github示例代码：https://github.com/craftor/usb2iic/blob/master/Example/linu
     /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
     /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
     username@192.168.2.22's password: 
-
+   
     Number of key(s) added:        1
-
+   
     Now try logging into the machine, with:   "ssh 'username@192.168.2.22'"
     and check to make sure that only the key(s) you wanted were added.    
    ```
@@ -2186,3 +2186,92 @@ registry = "git://crates.rustcc.cn/crates.io-index"
     exit(-1);
 #endif
 ```
+
+
+
+#### 获取程序执行时间的简化宏
+
+```c
+// 开始
+#define _TIME_BEGIN(name) uint64_t tv##name; \
+        tv##name = CPU_Get_MTimer_US();
+
+// 结束
+#define _TIME_END(name) uint64_t tv2##name = CPU_Get_MTimer_US();\
+        printf("[%s] exectime is %lld us, %lld ms\n", #name, tv2##name - tv##name, (tv2##name - tv##name) / 1000);
+```
+
+
+
+#### Rust二进制转结构体，unsafe实现
+
+```rust
+#[repr(C)]
+struct Row {
+    header: [u8; 16],
+    version: [u8; 8]
+}
+
+unsafe fn deserialize_row(src: Vec<u8>) ->  Row{
+    std::ptr::read(src.as_ptr() as *const _)
+ }
+
+fn main(){
+    unsafe {
+        let row = deserialize_row(contents);
+        println!("row header: {:?}", row.header);
+        println!("row version: {:?}", row.version);
+    }
+    
+}
+```
+
+
+
+#### 查找rust的库
+
+https://crates.io/
+
+
+
+#### Rust序列化/反序列化框架
+
+[Rust 序列化反序列框架 Serde](https://www.rectcircle.cn/posts/rust-serde/)
+
+- 对JSON进行序列化和反序列化
+
+  ```c
+  // Cargo.toml添加依赖
+  serde = { version = "1.0", features = ["derive"] }
+  serde_json = "1.0"
+      
+  // main.rs
+  use serde::{Serialize, Deserialize};
+  use serde_json;
+  
+  #[derive(Serialize, Deserialize)]
+  struct Color {
+      r: u8,
+      g: u8,
+      b: u8
+  }
+  
+  fn main(){
+      let data = r#"
+          {
+              "r": 31,
+              "g": 43,
+              "b": 12
+          }"#;
+  
+      // 解析字符串到Person对象。
+      let p: Color = serde_json::from_str(data).unwrap();
+      println!("Color: {} {} {}", p.r, p.g, p.b);
+      
+      // Person对象转为JSON字符串.
+      let serialized = serde_json::to_string(&p).unwrap();
+      println!("serialized = {}", serialized);
+  }
+  ```
+
+  
