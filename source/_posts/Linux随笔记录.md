@@ -371,43 +371,6 @@ sudo service ssh start
 sudo ps -e | grep ssh
 ```
 
-#### 开启Samba服务
-
-```shell
-# 安装samba服务器
-sudo apt-get install samba samba-common
-# 创建目录并更改权限
-sudo mkdir ~/sipeed2/share
-sudo chown nobody:nogroup ~/sipeed2/share
-sudo chmod 777  ~/sipeed2/share
-# 添加一个用户
-sudo smbpasswd -a lxo
-# 在最后一行(shift+g)配置smb.conf文件
-sudo vim /etc/samba/smb.conf
-# 添加smb.conf内容：
-[share]
-        comment = sipeed share
-        path = /home/share
-        browseable = yes
-        writable = yes
-        available = yes
-        valid users = lxo
-        create mask = 0777
-        directory mask = 0777
-# 添加smb.conf内容，这里是为了让外部能访问软链接
-[global]
-        follow symlinks = yes
-        wide links = yes
-        unix extensions = no
-        
-# 重启samba服务
-sudo service smbd restart
-
-# 使用linux测试Samba服务
-sudo apt install smbclient
-smbclient //192.168.43.128 -U lxo@liuxo
-```
-
 #### 访问动态库函数
 
 dlsym() 功能是根据动态链接库操作句柄与符号，返回符号对应的地址，不但可以获取函数地址，也可以获取变量地址。 返回符号对应的地址

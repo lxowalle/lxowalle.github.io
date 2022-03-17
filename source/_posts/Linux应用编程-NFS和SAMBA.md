@@ -1,9 +1,11 @@
 ---
-title: Linux应用编程-挂载NFS网络文件系统
+title: Linux应用编程-NFS和SAMBA
 tags:
 ---
 
-部署NFS服务器：
+## 部署NFS
+
+### 部署NFS服务器
 
 1. 安装NFS服务端
 
@@ -59,7 +61,7 @@ sudo exportfs -arv
 showmount -e
 ```
 
-部署NFS客户端：
+### 部署NFS客户端
 
 1. 安装NFS客户端
 
@@ -85,7 +87,7 @@ sudo mount -t nfs 192.168.100.231:/home/share /mnt/nfs
 /mnt	本地挂载目录。
 ```
 
-测试NFS服务器与NFS客户端是否正常共享
+### 测试NFS服务器与NFS客户端是否正常共享
 
 1. 在NFS服务器的共享目录下保存文件和内容
 
@@ -106,3 +108,48 @@ cat /mnt/nfs/test
 ```shell
 sudo umount /mnt/nfs	# /mnt/nfs是需要取消的挂载目录
 ```
+
+
+## 部署Samba
+
+### 部署Samba服务器
+
+```shell
+# 安装samba服务器
+sudo apt-get install samba samba-common
+# 创建目录并更改权限
+sudo mkdir ~/sipeed2/share
+sudo chown nobody:nogroup ~/sipeed2/share
+sudo chmod 777  ~/sipeed2/share
+# 添加一个用户
+sudo smbpasswd -a lxo
+# 在最后一行(shift+g)配置smb.conf文件
+sudo vim /etc/samba/smb.conf
+# 添加smb.conf内容：
+[share]
+        comment = sipeed share
+        path = /home/share
+        browseable = yes
+        writable = yes
+        available = yes
+        valid users = lxo
+        create mask = 0777
+        directory mask = 0777
+# 添加smb.conf内容，这里是为了让外部能访问软链接
+[global]
+        follow symlinks = yes
+        wide links = yes
+        unix extensions = no
+        
+# 重启samba服务
+sudo service smbd restart
+```
+
+### 测试Samba服务
+
+```c
+# 使用linux测试Samba服务
+sudo apt install smbclient
+smbclient //192.168.43.128 -U lxo@liuxo
+```
+
