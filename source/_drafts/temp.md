@@ -2274,4 +2274,200 @@ https://crates.io/
   }
   ```
 
-  
+#### 解决微信输入汉字是方块的问题
+https://github.com/wszqkzqk/deepin-wine-ubuntu/issues/136
+
+
+#### Linux qemu
+
+[linux内核](https://github.com/torvalds/linux)
+[利用 qemu 模拟嵌入式系统制作全过程](https://tinylab.org/using-qemu-simulation-inserts-the-type-system-to-produce-the-whole-process/)
+
+
+**编译内核：**
+
+```shell
+git clone https://github.com/torvalds/linux
+cd linux
+git checkout v5.16
+export ARCH=x86
+make x86_64_defconfig   # 加载默认配置
+make menuconfig         # 修改编译配置
+make -j8
+```
+
+```shell
+# 交叉编译
+make -j12 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+```
+
+---
+注：如果环境变量ARCH=x86，则编译生成的内核镜像的路径为arch/x86_64/boot/bzImage
+---
+
+**直接尝试用qemu运行内核**
+
+1. 修改CMDLINE配置，选择启动信息的输出端口为ttyS0,即当前终端的端口
+
+```shell
+make menuconfig
+
+# 修改配置(CMDLINE)
+ [*] Built-in kernel command line                                
+    (console=ttyS0 root=/dev/ram0) Built-in kernel command
+```
+
+2. 制作根文件系统
+
+**编译busybox**
+```shell
+git clone https://github.com/mirror/busybox.git
+cd busybox
+git checkout origin/1_35_stable
+export ARCH=x86
+make defconfig
+make menuconfig
+# 修改为静态编译(STATIC)
+Settings  --->
+    ---Build Options
+    [*] Build static binary (no shared libs)
+
+
+make -j8
+```
+---
+注：busybox工程的主目录下可以看到编译结果busybox可执行文件
+---
+
+```shell
+# 交叉编译
+make -j12 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
+```
+
+**编写ramfs中的init程序**
+
+```shell
+vim busybox_init.sh
+# 内容如下：
+
+#!/bin/sh
+echo
+echo "###########################################################"
+echo "## THis is a init script for initrd/initramfs ##"
+echo "## Author: wengpingbo@gmail.com ##"
+echo "## Date: 2013/08/17 16:27:34 CST ##"
+echo "###########################################################"
+echo
+
+# 1. 检查是否存在/bin/busybox命令
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+if [ ! -f "/bin/busybox" ];then
+  echo "cat not find busybox in /bin dir, exit"
+  exit 1
+fi
+
+# 2. 构建根文件系统
+BUSYBOX="/bin/busybox"
+echo "build root filesystem..."
+$BUSYBOX --install -s
+
+# 3、挂载proc文件系统
+if [ ! -d /proc ];then
+  echo "/proc dir not exist, create it..."
+  $BUSYBOX mkdir /proc
+fi
+echo "mount proc fs..."
+$BUSYBOX mount -t proc proc /proc
+
+# 4. 创建/dev目录
+if [ ! -d /dev ];then
+  echo "/dev dir not exist, create it..."
+  $BUSYBOX mkdir /dev
+fi
+# echo "mount tmpfs in /dev..."
+# $BUSYBOX mount -t tmpfs dev /dev
+
+# 5. 挂载devpts文件系统
+$BUSYBOX mkdir -p /dev/pts
+echo "mount devpts..."
+$BUSYBOX mount -t devpts devpts /dev/pts
+if [ ! -d /sys ];then
+  echo "/sys dir not exist, create it..."
+  $BUSYBOX mkdir /sys
+fi
+
+# 6. 挂载sysfs文件系统
+echo "mount sys fs..."
+$BUSYBOX mount -t sysfs sys /sys
+
+# 7. 加载外设
+echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+echo "populate the dev dir..."
+$BUSYBOX mdev -s
+
+# 8. 完成
+echo "drop to shell..."
+$BUSYBOX sh
+exit 0
+```
+
+**next**
+
+目前已经准备好了Linux内核镜像，busybox可执行文件，init启动脚本，现在开始考虑根文件系统的目录结构了。kernel支持很多种文件系统，例如：ext4、ext3、ext2、cramfs、nfs、jffs2、reoserfs等，还有一些伪文件系统，例如：sysfs、proc、ramfs等。根文件系统的目录结构标准是由kernel开发者制定的，但这里只考虑了一些必须的目录结构。如下：
+
+```shell
+/
+├── bin
+│   ├── busybox
+│   └── sh -> busybox
+├── dev
+│   └── console
+├── etc
+│   └── init.d
+│       └── rcS
+├── init
+├── sbin
+└── usr
+    ├── bin
+    └── sbin
+```
+使用下面的命令来构建上面的文件系统
+
+```shell
+mkdir ramfs && cd ramfs
+
+# 创建目录
+mkdir -pv bin dev etc/init.d sbin user/{bin,sbin}
+
+# 添加busybox命令
+cp ../busybox/busybox ./bin
+
+# 创建console字符设备
+sudo mknod -m 644 dev/console c 5 1
+
+# 创建启动文件
+cp ../busybox_init.sh ./init
+touch etc/init.d/rcS
+chmod +x bin/busybox etc/init.d/rcS init
+```
+目前已经有了基本的initramfs，下一步就是制作initramfs镜像并让kernel加载它。我们可以将initramfs直接集成到kernel里，也可以单独加载initramfs。
+
+直接集成到kernel里（未完全测试）
+- 使用kernel源码的usr目录下(或scripts目录)的gen_initramfs_list.sh脚本
+```shell
+cd linux
+./usr/gen_initramfs.sh -o ramfs.gz ../ramfs/
+
+make menuconfig
+# 修改INITRAMFS_SOUCE来包含ramfs.gc文件
+General setup  --->  
+   (ramfs.gz) Initramfs source file(s)
+```
+
+
+3. 使用qemu运行内核
+```shell
+qemu-system-x86_64 \
+-kernel arch/x86_64/boot/bzImage \
+-nographic
+```

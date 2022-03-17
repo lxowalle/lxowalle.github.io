@@ -25,7 +25,8 @@ General setip->
 	[*]Initial RAM filesystem and RAM disk (initramfs/initrd) support
 Device Drivers->
 	[*]Block devices --->
-          (16)    Default number of RAM disks                                       		(65536) Default RAM disk size (kbytes) 
+          (16)    Default number of RAM disks
+          (65536) Default RAM disk size (kbytes) 
 # end
 make
 ```
@@ -42,6 +43,10 @@ make
 tar -xvf busybox-1.34.1.tar.bz2
 cd busybox-1.34.1
 make menuconfig		# 注意需要在Setting中配置为静态编译，否则运行时会缺少动态库
+# menuconfig配置内容
+Busybox Settings  --->
+      Build Options  --->
+            [*] Build BusyBox as a static binary (no shared libs)
 make && make install
 ```
 
@@ -173,12 +178,12 @@ sudo make && make install
 qemu-system-x86_64 \
 -kernel linux-4.9.229/arch/x86_64/boot/bzImage \
 -initrd busybox-1.34.1/rootfs.img.gz \
--append "root=/dev/ram init=/linuxrc" \
--serial file:output.txt
+-append "console=ttyS0 root=/dev/ram init=/linuxrc" \
+-nographic
 ```
-
-
-
+- kernel:指定内核镜像，一般是zbImage文件
+- initrd:指定initramfs
+- append:提供内核参数，指引rootfs的分区，指引init命令路径
 注意：
 
 ```shell
@@ -342,7 +347,7 @@ cat etc/inittab
 
 ​	etc/inittab文件内由多个登记项组成，每个登机项有4个参数：
 
-1. id：用来作为每个登机项的唯一标识符，不可重复。
+1. id：用来作为每个登记项的唯一标识符，不可重复。
 
 2. runlevel：表示进程运行的级别，同一个进程可以有多个运行级别，各个级别之间不需要分隔符。如果为空，则表示在所有的运行级别中运行。Linux运行级别有：
 
