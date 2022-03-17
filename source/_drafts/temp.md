@@ -2303,7 +2303,8 @@ make -j12 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi-
 
 ---
 注：如果环境变量ARCH=x86，则编译生成的内核镜像的路径为arch/x86_64/boot/bzImage
----
+
+
 
 **直接尝试用qemu运行内核**
 
@@ -2335,9 +2336,13 @@ Settings  --->
 
 make -j8
 ```
+-----
+
+注：编译成功后可以在busybox工程的主目录下可以找到可执行文件`busybox`
+
 ---
-注：busybox工程的主目录下可以看到编译结果busybox可执行文件
----
+
+
 
 ```shell
 # 交叉编译
@@ -2437,10 +2442,11 @@ exit 0
 mkdir ramfs && cd ramfs
 
 # 创建目录
-mkdir -pv bin dev etc/init.d sbin user/{bin,sbin}
+mkdir -pv bin dev etc/init.d sbin usr/{bin,sbin}
 
 # 添加busybox命令
 cp ../busybox/busybox ./bin
+ln -s busybox bin/sh
 
 # 创建console字符设备
 sudo mknod -m 644 dev/console c 5 1
@@ -2459,13 +2465,197 @@ cd linux
 ./usr/gen_initramfs.sh -o ramfs.gz ../ramfs/
 
 make menuconfig
-# 修改INITRAMFS_SOUCE来包含ramfs.gc文件
+# 修改INITRAMFS_SOUCE来包含ramfs.gz文件
 General setup  --->  
    (ramfs.gz) Initramfs source file(s)
 ```
 
+- 手动制作initramfs并从外部加载
 
-3. 使用qemu运行内核
+```shell
+# 生成ramfs压缩包
+find . | cpio -o -H newc | gzip -9 > ramfs.gz
+
+# 运行 
+qemu-system-x86_64 \
+-kernel linux/arch/x86_64/boot/bzImage \
+-nographic \
+-initrd ramfs/ramfs.gz
+```
+
+至此就可以运行起一个小型的外挂ramfs的Linux系统了
+
+
+
+3. 配置物理文件系统，切换根文件系统
+
+​	一般使用initramfs/initrd的场景是为了不违背kernel版本协议，又达到不开源的目的。正常的linux发行版中，在kernel初始化完成后会先挂载initramfs/initrd来加载其他驱动，并做一些初始化设置，然后才会挂载真正的根文件系统。
+
+​	kernel会执行两个init，一个是initramfs的init，另一个是根文件系统的init程序，上面已经完成了第一个init，接下来开始完成第二个init，我们需要挂载物理文件系统，并切换到根文件系统，然后执行init
+
+**使用dd命令生成一个物理磁盘**
+
+```shell
+dd if=/dev/zero of=./hda.img bs=1 count=10M
+mkfs -t ext2 hda.img
+mkdir hda
+sudo mount hda.img hda
+sudo cp -r ramfs/* hda 
+sudo umount hda && rm -rf hda	
+```
+
+将前面制作的ramfs目录结构拷贝到一个ext2文件系统的磁盘后即完成根文件系统的制作，其中根文件系统的目录以及磁盘格式可以根据实际需求更改。
+
+修改init文件,内容如下：
+
+```shell
+#!/bin/sh
+echo
+echo "###########################################################"
+echo "## THis is a init script for sd ext2 filesystem ##"
+echo "## Author: wengpingbo@gmail.com ##"
+echo "## Date: 2013/08/17 16:27:34 CST ##"
+echo "###########################################################"
+echo
+
+# 1. 检查是否存busybox命令
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+if [ ! -f "/bin/busybox" ];then
+  echo "cat not find busybox in /bin dir, exit"
+  exit 1
+fi
+BUSYBOX="/bin/busybox"
+
+# 2. 构建基本的根文件系统
+echo "build root filesystem..."
+$BUSYBOX --install -s
+
+# 3. 挂载proc文件系统
+if [ ! -d /proc ];then
+  echo "/proc dir not exist, create it..."
+  $BUSYBOX mkdir /proc
+fi
+echo "mount proc fs..."
+$BUSYBOX mount -t proc proc /proc
+
+# 4. 创建/dev目录
+if [ ! -d /dev ];then
+  echo "/dev dir not exist, create it..."
+  $BUSYBOX mkdir /dev
+fi
+# echo "mount tmpfs in /dev..."
+# $BUSYBOX mount -t tmpfs dev /dev
+$BUSYBOX mkdir -p /dev/pts
+
+# 5. 挂载devpts文件系统
+echo "mount devpts..."
+$BUSYBOX mount -t devpts devpts /dev/pts
+
+# 6. 挂载sysfs文件系统
+if [ ! -d /sys ];then
+  echo "/sys dir not exist, create it..."
+  $BUSYBOX mkdir /sys
+fi
+echo "mount sys fs..."
+$BUSYBOX mount -t sysfs sys /sys
+
+# 7. 热启动
+echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+echo "populate the dev dir..."
+
+# 8. 加载驱动模块
+$BUSYBOX mdev -s
+
+# 9. 挂载根文件系统
+echo "dev filesystem is ok now, log all in kernel kmsg" >> /dev/kmsg
+echo "you can add some third part driver in this phase..." >> /dev/kmsg
+echo "begin switch root directory to sd card" >> /dev/kmsg
+$BUSYBOX mkdir /newroot
+if [ ! -b "/dev/mmcblk0" ];then
+  echo "can not find /dev/mmcblk0, please make sure the sd \
+card is attached correctly!" >> /dev/kmsg
+  echo "drop to shell" >> /dev/kmsg
+  $BUSYBOX sh
+else
+  $BUSYBOX mount /dev/mmcblk0 /newroot
+  if [ $? -eq 0 ];then
+        echo "mount root file system successfully..." >> /dev/kmsg
+  else
+        echo "failed to mount root file system, drop to shell" >> /dev/kmsg
+        $BUSYBOX sh
+  fi
+fi
+
+# 10. 根文件系统挂载完毕，清空根文件系统
+# the root file system is mounted, clean the world for new root file system
+echo "" > /proc/sys/kernel/hotplug
+$BUSYBOX umount -f /proc
+$BUSYBOX umount -f /sys
+$BUSYBOX umount -f /dev/pts
+# $BUSYBOX umount -f /dev
+echo "enter new root..." >> /dev/kmsg
+
+# 11. 执行根文件下的init程序
+exec $BUSYBOX switch_root -c /dev/console /newroot /init
+if [ $? -ne 0 ];then
+  echo "enter new root file system failed, drop to shell" >> /dev/kmsg
+  $BUSYBOX mount -t proc proc /proc
+  $BUSYBOX sh
+fi
+
+# 12. 完成
+```
+
+重新更新ramfs镜像
+
+```shell
+cd ramfs && rm ramfs.gz
+find . | cpio -o -H newc | gzip -9 > ramfs.gz
+```
+
+启动系统
+
+```shell
+# x86_64
+qemu-system-x86_64 \
+-kernel linux/arch/x86_64/boot/bzImage \
+-nographic \
+-initrd ramfs/ramfs.gz \
+-drive if=none,file=hda.img,id=hd0
+
+-sd hda.img
+
+-device sdhci-pci \
+-device sd-card,drive=mmcblk0 \
+-drive id=mmcblk0,if=none,format=raw,file=hda.img
+
+
+# 问题
+machine type does not support if=sd,bus=0,unit=0
+
+sudo qemu-system-arm -m 1024 -cpu cortex-a57 -M virt -nographic \
+-pflash flash0.img \
+-pflash flash1.img \
+-drive if=none,file=xenial-server-cloudimg-arm64-uefi1.img,id=hd0 \
+-device virtio-blk-device,drive=hd0 \
+-device virtio-net-device,netdev=net0,mac=$randmac \
+-netdev type=tap,id=net0
+
+
+sudo qemu-system-arm -m 1024 -cpu cortex-a57 -M virt -nographic \
+-drive file=flash0.img,format=raw,if=pflash \
+-drive file=flash1.img,format=raw,if=pflash \
+-drive if=none,file=xenial-server-cloudimg-arm64-uefi1.img,id=hd0 \
+-device virtio-blk-device,drive=hd0 \
+-device virtio-net-device,netdev=net0,mac=$randmac \
+-netdev type=tap,id=net0
+
+```
+
+
+
+4. 使用qemu运行内核
+
 ```shell
 qemu-system-x86_64 \
 -kernel arch/x86_64/boot/bzImage \
