@@ -2286,6 +2286,11 @@ https://github.com/wszqkzqk/deepin-wine-ubuntu/issues/136
 
 **编译内核：**
 
+安装依赖：
+```
+sudo apt insall bison
+```
+
 ```shell
 git clone https://github.com/torvalds/linux
 cd linux
@@ -2661,3 +2666,170 @@ qemu-system-x86_64 \
 -kernel arch/x86_64/boot/bzImage \
 -nographic
 ```
+
+#### uboot
+
+```shell
+git clone https://github.com/u-boot/u-boot.git
+git checkout v2022.01
+export ARCH=x86_64
+make qemu-x86_64_defconfig
+make -j8
+```
+
+#### loop设备使用
+
+loop用来模拟块设备
+
+```shell
+# 创建一个文件
+dd if=/dev/zero of=sd_card bs=1M count=128
+
+# 将文件转换为块设备
+losetup -f                  # 1. 先找到空闲的loop设备
+losetup /dev/loop15 sd_card # 2. 将空闲loop设备连接到文件
+
+# 查看刚刚创建的块设备
+lsblk | grep /dev/loop15
+losetup -a
+
+# 删除块设备(断开连接)
+losetup -d /dev/loop15
+```
+
+#### 交叉编译链
+[参考文章](https://mp.weixin.qq.com/s?__biz=MzAwMjQ1ODYyOQ==&mid=2247483673&idx=1&sn=2df104549a462b36d46c828ca88e98e5&chksm=9acb5473adbcdd656771483ef000e08d3bfb9f761c7f6c036cbbaae28c590593abab5f89e71f&mpshare=1&srcid=&sharer_sharetime=1573647854905&sharer_shareid=025223779ea46de7b8ccafe0bbfa3cc1&scene=21#wechat_redirect)
+
+apt安装：
+```shell
+#在主机上执行如下命令
+sudo apt install gcc-arm-linux-gnueabihf
+
+#安装完成后使用如下命令查看版本
+arm-linux-gnueabihf-gcc -v  或 arm-linux-gnueabihf-gcc --version
+
+#卸载
+udo apt remove --auto-remove gcc-arm-linux-gnueabihf
+```
+
+下载包安装：
+[工具链地址old](http://releases.linaro.org/components/toolchain/binaries/)
+[工具链地址new](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
+[工具链地址-镜像站](https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/)
+```shell
+# arm64 
+wget https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu.tar.xz
+
+# arm32
+wget https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf.tar.xz
+
+# 解压并安装到/usr/local/toolchain目录
+xz -d gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu.tar.xz
+xz -d gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf.tar.xz
+
+sudo mkdir -p /usr/local/toolchain
+sudo tar -xvJf gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu.tar -C /usr/local/toolchain
+sudo tar -xvJf gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf.tar.xz -C /usr/local/toolchain
+
+# 添加到环境变量(也可以写到~/.bashrc文件并执行source ~/.bashrc生效)
+export PATH=$PATH:/usr/local/toolchain/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin
+
+export PATH=$PATH:/usr/local/toolchain/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin
+
+# 查看工具链版本
+aarch64-linux-gnu-gcc -v
+arm-linux-gnueabihf-gcc -v
+```
+
+#### u-boot
+```shell
+git clone https://github.com/u-boot/u-boot.git
+git checkout v2022.01
+make vexpress_ca9x4_defconfig
+sudo make CROSS_COMPILE=arm-none-linux-gnueabihf- all -j12
+
+```
+
+#### QEMU
+
+[qemu官网下载](https://www.qemu.org/download/)
+
+编译安装：
+```shell
+# 获取源码
+git clone https://gitlab.com/qemu-project/qemu.git
+cd qemu
+git submodule init
+git submodule update --recursive
+git switch stable-6.1
+
+# 编译
+./configure
+make
+
+# 安装
+make install
+
+# 检查版本
+qemu-system-arm --version
+```
+
+-----
+> 最好手动安装qemu的最新版
+-----
+
+#### buildroot
+
+```shell
+git clone git://git.buildroot.net/buildroot
+
+# 修改Target options选项
+Target options
+Target Architecture (ARM (little endian))  ---> 
+Target Binary Format (ELF)  --->                   
+Target Architecture Variant (cortex-A9)  --->       
+[ ] Enable NEON SIMD extension support (NEW)
+[*] Enable VFP extension support 
+Target ABI (EABIhf)  --->
+Floating point strategy (VFPv3-D16)  --->
+ARM instruction set (ARM)  ---> 
+# 修改Build options选项
+Build options
+($(CONFIG_DIR)/configs/ca9_mini_defconfig) Location to save build
+
+# 修改Toolchain选项
+Toolchain
+Toolchain type (External toolchain)  --->  
+*** Toolchain External Options ***         
+Toolchain (Custom toolchain)  --->         
+Toolchain origin (Pre-installed toolchain)  --->  
+(/usr/local/toolchain/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf) Toolchain path     
+($(ARCH)-none-linux-gnueabihf) Toolchain prefix     
+External toolchain gcc version (9.x)  --->        
+External toolchain kernel headers series (4.20.x)  ---> 
+External toolchain C library (glibc/eglibc)  ---> 
+
+# 修改System configuration->Run a getty(login prompt) after boot选项
+(ttyAMA0) TTY port
+
+# 修改Filesystem images选项
+[*] cpio the root filesystem (for use as an initial RAM filesyste
+        Compression method (lz4)  --->  
+
+# 修改Target packages来自定义需要增加的busybox命令
+# ...
+
+# 保存并生成defconfig配置文件
+make savedefconfig
+
+make ca9_mini_defconfig
+make -j12
+```
+
+-----
+> 1. 查看arm-linux-gnueabihf-gcc的版本号
+>   arm-linux-gnueabihf-gcc -v
+> 2. 查看工具链位置
+> 3. 查看kernel头版本
+>   进入工具链的linux/version.h文件，通过宏LINUX_VERSION_CODE的值获取，该宏的bit23-bit16是大版本号，bit15-bit8是中版本号，bit7-bit0是小版本号
+-----
