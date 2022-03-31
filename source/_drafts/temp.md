@@ -500,7 +500,7 @@ _attribute__((constructor(102))) static void pre_main2(void)
 }
 ```
 
-`_attribute__((constructor))`可以标记一个函数，让这个函数在main()或exit()之后执行。使用方法类似`_attribute__((constructor))`
+`_attribute__((destructor))`可以标记一个函数，让这个函数在main()或exit()之后执行。使用方法类似`_attribute__((constructor))`
 
 #### 似乎有点看头的Rust教程，点击[这里](https://rust-book.junmajinlong.com/ch1/01_expression.html)跳转
 
@@ -741,7 +741,7 @@ mf_qr_scan_ctl(QR_CTLSET_HANDLECB, sacn_and_config_wifi_cb);
 #### git取消跟踪文件
 1. 取消跟踪所有文件,保留本地文件：git rm -r --cached
 2. 取消跟踪所有文件,删除本地文件：git rm -r --f
-3. 取消跟踪xxx文件,保留本地的xxx文件：git rm --cache   xxx
+3. 取消跟踪xxx文件,保留本地的xxx文件：git rm --cached   xxx
 4. 取消跟踪xxx文件,删除本地的xxx文件: git rm --f xxx
 
 **取消跟踪后本地的.gitignore仍然不生效的解决方法**
@@ -2833,3 +2833,8 @@ make -j12
 > 3. 查看kernel头版本
 >   进入工具链的linux/version.h文件，通过宏LINUX_VERSION_CODE的值获取，该宏的bit23-bit16是大版本号，bit15-bit8是中版本号，bit7-bit0是小版本号
 -----
+
+
+#### 数据结构体与算法
+
+[数据结构与算法](https://www.cxyxiaowu.com/7072.html)
