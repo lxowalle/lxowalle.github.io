@@ -26,9 +26,6 @@ sudo apt-get install com.dingtalk.deepin    # 钉钉
 ```
 
 3. 安装完成并重启电脑后会生成运行图标，点击图标来启动程序
-
-
-
 ##### 微信不能输入中文
 
 在deepin-wine的运行脚本目录中加载输入法
@@ -41,5 +38,20 @@ vim run.sh   					#修改脚本
 export GTK_IM_MODULE="fcitx"
 export QT_IM_MODULE="fcitx" 
 export XMODIFIERS="@im=fcitx"
+```
+
+##### 20220428更新
+
+参考[这里](https://github.com/lovechoudoufu/wechat_for_linux)的步骤也可以使用微信
+
+```shell
+# 下载
+http://archive.ubuntukylin.com/ubuntukylin/pool/partner/weixin_2.1.1_amd64.deb
+
+# 安装
+sudo dpkg -i weixin_2.1.1_amd64.deb
+
+# 启动
+./weixin
 ```
 
