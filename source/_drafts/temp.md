@@ -2838,3 +2838,40 @@ make -j12
 #### 数据结构体与算法
 
 [数据结构与算法](https://www.cxyxiaowu.com/7072.html)
+
+
+#### ubuntu创建桌面启动文件
+
+1. 创建desktop后缀的文件
+
+```shell
+touch my_app.desktop
+```
+
+2. 写入代码
+
+```shell
+[Desktop Entry]
+Name=MyAPP
+Exec=your/path/my_app
+Icon=your/path/pic_for_myapp.jpg
+Path=your/path
+Terminal=true
+StartupNotify=true
+Type=Application
+```
+
+3. 更改文件权限
+
+```shell
+sudo chown -R $USER:$USER my_app.desktop
+sudo chmod +x my_app.desktop
+```
+
+4. 检查文件是否合法
+
+```shell
+desktop-file-validate my_app.desktop
+```
+
+5. 完成，双击启动
