@@ -2850,6 +2850,7 @@ touch my_app.desktop
 
 2. 写入代码
 
+**不需要root权限**
 ```shell
 [Desktop Entry]
 Name=MyAPP
@@ -2860,6 +2861,20 @@ Terminal=true
 StartupNotify=true
 Type=Application
 ```
+**需要root权限**
+```shell
+[Desktop Entry]
+Name=MyAPP
+Exec=sudo your/path/my_app          # sudo
+Icon=your/path/pic_for_myapp.jpg
+Path=your/path
+Terminal=true
+StartupNotify=true
+Type=Application
+```
+注：
+> 1. 在添加sudo权限后，可以再添加-p来指定密码，但是这样不安全。
+> 2. 在添加sudo权限后，可以通过visudo命令来修改/etc/sudoers文件来让该程序无需输入密码，这样更安全。修改方式：执行visudo，在打开的文件末尾添加`sipeed ALL=NOPASSWD:/home/sipeed/sipeed/tools_for_bl/flash_tool/BLDevCube`，如果不在末尾添加这段代码，则可能会被其他代码覆盖导致不生效。
 
 3. 更改文件权限
 
@@ -2875,3 +2890,13 @@ desktop-file-validate my_app.desktop
 ```
 
 5. 完成，双击启动
+
+#### c警告
+
+```c
+// 将`char-subscripts`当成警告处理
+#pragma GCC diagnostic warning "-Wchar-subscripts"
+
+// 忽略`-Wchar-subscripts`检查
+#pragma GCC diagnostic ignored "-Wchar-subscripts"
+```
