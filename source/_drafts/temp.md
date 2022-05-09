@@ -2856,9 +2856,8 @@ touch my_app.desktop
 Name=MyAPP
 Exec=your/path/my_app
 Icon=your/path/pic_for_myapp.jpg
-Path=your/path
-Terminal=true
-StartupNotify=true
+Terminal=false
+StartupNotify=false
 Type=Application
 ```
 **需要root权限**
@@ -2867,9 +2866,8 @@ Type=Application
 Name=MyAPP
 Exec=sudo your/path/my_app          # sudo
 Icon=your/path/pic_for_myapp.jpg
-Path=your/path
-Terminal=true
-StartupNotify=true
+Terminal=false
+StartupNotify=false
 Type=Application
 ```
 注：
