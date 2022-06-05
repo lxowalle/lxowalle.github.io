@@ -2501,7 +2501,7 @@ qemu-system-x86_64 \
 **使用dd命令生成一个物理磁盘**
 
 ```shell
-dd if=/dev/zero of=./hda.img bs=1 count=10M
+dd if=/dev/zero of=./hda.img bs=16M count=1
 mkfs -t ext2 hda.img
 mkdir hda
 sudo mount hda.img hda
@@ -2623,45 +2623,74 @@ find . | cpio -o -H newc | gzip -9 > ramfs.gz
 ```shell
 # x86_64
 qemu-system-x86_64 \
+-M pc \
 -kernel linux/arch/x86_64/boot/bzImage \
 -nographic \
 -initrd ramfs/ramfs.gz \
--drive if=none,file=hda.img,id=hd0
-
--sd hda.img
-
 -device sdhci-pci \
--device sd-card,drive=mmcblk0 \
--drive id=mmcblk0,if=none,format=raw,file=hda.img
+-device sd-card,drive=mysd \
+-drive file=hda.img,id=mysd,if=sd,format=raw
 
 
-# 问题
-machine type does not support if=sd,bus=0,unit=0
-
-sudo qemu-system-arm -m 1024 -cpu cortex-a57 -M virt -nographic \
--pflash flash0.img \
--pflash flash1.img \
--drive if=none,file=xenial-server-cloudimg-arm64-uefi1.img,id=hd0 \
--device virtio-blk-device,drive=hd0 \
--device virtio-net-device,netdev=net0,mac=$randmac \
--netdev type=tap,id=net0
-
-
-sudo qemu-system-arm -m 1024 -cpu cortex-a57 -M virt -nographic \
--drive file=flash0.img,format=raw,if=pflash \
--drive file=flash1.img,format=raw,if=pflash \
--drive if=none,file=xenial-server-cloudimg-arm64-uefi1.img,id=hd0 \
--device virtio-blk-device,drive=hd0 \
--device virtio-net-device,netdev=net0,mac=$randmac \
--netdev type=tap,id=net0
-
+-sd hda.img \
 ```
 
 
 
-4. 使用qemu运行内核
+4. uboot
 
 ```shell
+./u-boot/tools/mkimage -A x86_64 -O linux -T ramdisk -C none -a 0x00808000 -e 0x00808000 -n ramdisk -d ramfs/ramfs.gz ramfs-uboot.img
+
+# u-boot编译配置
+#define CONFIG_ARCH_VERSATILE_QEMU
+#define CONFIG_INITRD_TAG
+#define CONFIG_SYS_PROMPT  "myboard > "
+#define CONFIG_BOOTCOMMAND \
+  "sete ipaddr 10.0.2.15;"\
+  "sete serverip 10.0.2.2;"\
+  "set bootargs 'console=ttyAMA0,115200 root=/dev/mmcblk0';"\
+  "tftpboot 0x00007fc0 uImage;"\
+  "tftpboot 0x00807fc0 ramfs-uboot.img;"\
+  "bootm 0x7fc0 0x807fc0"
+```
+
+
+
+#### Linux模拟arm
+
+##### 制作Linux内核
+
+```shell
+cd linux
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+make versatile_defconfig
+make menuconfig
+# 修改.config配置，进入menuconfig后，输入/并查找并修改下面的宏。注意搜索时不需要CONFIG_前缀
+CONFIG_AEABI=y
+CONFIG_OABI_COMPAT=y
+CONFIG_PRINTK_TIME=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_CMDLINE="earlyprintk console=ttyS0 root=/dev/ram0 console=ttyAMA0"
+    
+make -j12 
+```
+
+-----
+
+注：Linux内核默认添加了-msoft-float选项，默认编译为软浮点程序。对于支持硬件浮点计算的机器，一般是在`arch/xxx/Makefile`中将编译选项-msoft-float去掉。对于一般的程序，也可以使用编译选项"-mfloat-abi=hard"使能硬浮点计算。
+
+-----
+
+
+
+##### 制作busybox
+
+- 编译busybox
+
+```shell
+<<<<<<< Updated upstream
 qemu-system-x86_64 \
 -kernel arch/x86_64/boot/bzImage \
 -nographic
@@ -2898,3 +2927,210 @@ desktop-file-validate my_app.desktop
 // 忽略`-Wchar-subscripts`检查
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 ```
+=======
+cd busybox
+make defconfig ARCH=arm
+make menuconfig
+# 修改.config配置(STATIC)
+Settings  --->
+    ---Build Options
+    [*] Build static binary (no shared libs)
+    
+make -j12 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+```
+
+- 编写init程序内容，这里是一个shell脚本
+
+```shell
+#!/bin/sh
+echo
+echo "###########################################################"
+echo "## THis is a init script for sd ext2 filesystem ##"
+echo "## Author: wengpingbo@gmail.com ##"
+echo "## Date: 2013/08/17 16:27:34 CST ##"
+echo "###########################################################"
+echo
+
+# 1. 检查是否存busybox命令
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+if [ ! -f "/bin/busybox" ];then
+  echo "cat not find busybox in /bin dir, exit"
+  exit 1
+fi
+BUSYBOX="/bin/busybox"
+
+# 2. 构建基本的根文件系统
+echo "build root filesystem..."
+$BUSYBOX --install -s
+
+# 3. 挂载proc文件系统
+if [ ! -d /proc ];then
+  echo "/proc dir not exist, create it..."
+  $BUSYBOX mkdir /proc
+fi
+echo "mount proc fs..."
+$BUSYBOX mount -t proc proc /proc
+
+# 4. 创建/dev目录
+if [ ! -d /dev ];then
+  echo "/dev dir not exist, create it..."
+  $BUSYBOX mkdir /dev
+fi
+# echo "mount tmpfs in /dev..."
+# $BUSYBOX mount -t tmpfs dev /dev
+$BUSYBOX mkdir -p /dev/pts
+
+# 5. 挂载devpts文件系统
+echo "mount devpts..."
+$BUSYBOX mount -t devpts devpts /dev/pts
+
+# 6. 挂载sysfs文件系统
+if [ ! -d /sys ];then
+  echo "/sys dir not exist, create it..."
+  $BUSYBOX mkdir /sys
+fi
+echo "mount sys fs..."
+$BUSYBOX mount -t sysfs sys /sys
+
+# 7. 热启动
+echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+echo "populate the dev dir..."
+
+# 8. 加载驱动模块
+$BUSYBOX mdev -s
+
+# 9. 挂载根文件系统
+echo "dev filesystem is ok now, log all in kernel kmsg" >> /dev/kmsg
+echo "you can add some third part driver in this phase..." >> /dev/kmsg
+echo "begin switch root directory to sd card" >> /dev/kmsg
+$BUSYBOX mkdir /newroot
+if [ ! -b "/dev/mmcblk0" ];then
+  echo "can not find /dev/mmcblk0, please make sure the sd \
+card is attached correctly!" >> /dev/kmsg
+  echo "drop to shell" >> /dev/kmsg
+  $BUSYBOX sh
+else
+  $BUSYBOX mount /dev/mmcblk0 /newroot
+  if [ $? -eq 0 ];then
+        echo "mount root file system successfully..." >> /dev/kmsg
+  else
+        echo "failed to mount root file system, drop to shell" >> /dev/kmsg
+        $BUSYBOX sh
+  fi
+fi
+
+# 10. 根文件系统挂载完毕，清空根文件系统
+# the root file system is mounted, clean the world for new root file system
+echo "" > /proc/sys/kernel/hotplug
+$BUSYBOX umount -f /proc
+$BUSYBOX umount -f /sys
+$BUSYBOX umount -f /dev/pts
+# $BUSYBOX umount -f /dev
+echo "enter new root..." >> /dev/kmsg
+
+# 11. 执行根文件下的init程序
+exec $BUSYBOX switch_root -c /dev/console /newroot /init
+if [ $? -ne 0 ];then
+  echo "enter new root file system failed, drop to shell" >> /dev/kmsg
+  $BUSYBOX mount -t proc proc /proc
+  $BUSYBOX sh
+fi
+
+# 12. 完成
+```
+
+- 制作ramfs文件系统
+
+```shell
+#! /bin/bash
+
+mkdir ramfs && cd ramfs
+# 创建目录
+mkdir -pv bin dev etc/init.d sbin usr/{bin,sbin}
+# 添加busybox命令
+cp ../busybox/busybox ./bin
+ln -s busybox bin/sh
+# 创建console字符设备
+sudo mknod -m 644 dev/console c 5 1
+# 创建启动文件
+cp ../init ./init
+touch etc/init.d/rcS
+chmod +x bin/busybox etc/init.d/rcS init
+cd ..
+```
+
+-----
+
+注：上面脚本实现的ramfs目录结构如下所示：
+
+```shell
+/
+├── bin
+│   ├── busybox
+│   └── sh -> busybox
+├── dev
+│   └── console
+├── etc
+│   └── init.d
+│       └── rcS
+├── init
+├── sbin
+└── usr
+    ├── bin
+    └── sbin
+```
+
+-----
+
+
+- 打包ramfs
+
+```shell
+cd ./ramfs
+find . | cpio -o -H newc | gzip -9 > ramfs.gz
+```
+
+- 运行一次
+
+```shell
+qemu-system-arm -M versatilepb \
+-dtb linux/arch/arm/boot/dts/versatile-pb.dtb \
+-kernel linux/arch/arm/boot/zImage \
+-nographic \
+-initrd ramfs/ramfs.gz
+```
+
+-----
+
+注：如果遇到`Kernel panic -not syncing:Attempted to kill init!`的问题，尝试使用readelf读`linux/vmlinux`和`busybox/busybox`的Flag是否相同。例如`vmlinux`是软浮点计算，`busybox`是硬浮点计算，则可能导致内核panic
+
+-----
+
+
+
+##### 制作根文件系统
+
+- 制作物理磁盘
+
+```shell
+dd if=/dev/zero of=./hda.img bs=16M count=1
+mkfs -t ext2 hda.img
+mkdir hda
+sudo mount hda.img hda
+sudo cp -r ramfs/* hda 
+sudo umount hda && rm -rf hda	
+```
+
+- 运行一次
+
+```shell
+qemu-system-arm -M versatilepb \
+-dtb linux/arch/arm/boot/dts/versatile-pb.dtb \
+-kernel linux/arch/arm/boot/zImage \
+-nographic \
+-sd hda.img \
+-initrd ramfs/ramfs.gz
+
+```
+
+>>>>>>> Stashed changes
