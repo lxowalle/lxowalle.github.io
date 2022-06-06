@@ -2927,7 +2927,8 @@ desktop-file-validate my_app.desktop
 // 忽略`-Wchar-subscripts`检查
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 ```
-=======
+
+### 根文件系统？？
 cd busybox
 make defconfig ARCH=arm
 make menuconfig
@@ -3133,4 +3134,85 @@ qemu-system-arm -M versatilepb \
 
 ```
 
->>>>>>> Stashed changes
+// 忽略`-Wformat`检查
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wformat" 
+// code
+// ...
+#pragma GCC diagnostic pop
+```
+
+#### GDB命令调试rv
+[参考](https://www.jianshu.com/p/b7896e9afeb7)
+```
+// 部分指令
+file <file-name>    加载需要调试的程序
+attach <pid>        关联指定进程id
+help <cmd>          查看指定命令说明
+
+r                   运行程序，直到断点
+c                   继续运行程序，直到断点
+b <line>            断点
+b <func>            断点
+b *<code_addr>      断点
+d [id]              删除断点
+si                  执行一行代码
+ni                  执行一行代码，函数也会当成是一行
+p $pc               显示pc的值
+x/10i $pc           查看pc指向的地址后10行的汇编代码
+display /i $pc      每次执行命令后，显示下一条汇编命令
+undisplay <id>      取消display的显示
+q                   退出gdb
+```
+
+##### 
+stack_wifi
+
+wifi_sta_ip_set 192.168.1.212 255.255.255.0 192.168.1.1 114.114.114.114 114.114.114.114
+wifi_sta_connect Sipeed_2.4G aPy5W9x.
+wifi_sta_info
+
+#### 抓摄像头数据
+1. 检查是否支持debugfs文件系统
+
+```shell
+# 检测内核是否支持 debugfs 文件系统
+cat /proc/filesystems | grep "debugfs"
+# 挂载 debugfs 文件系统
+sudo mount -t debugfs none_debugs /sys/kernel/debug
+```
+2. 安装usbmon,参考[这里](https://blog.51cto.com/u_11616959/4754739)
+
+```shell
+# 确认内核支持 usbmon 模块
+ls /sys/module/usbmon
+# 安装 usbmon 模块
+modprobe usbmon
+```
+
+3. 安装使用tcpdump和libpcap
+
+```shell
+# 安装tcpdump
+sudo apt install tcpdump
+# 安装libpcap-dev
+sudo apt install libpcap-dev
+# 查看设备,可以看到有usbmon设备
+tcpdump -D
+# 通过bus编号确认是哪个usbmon设备
+sudo cat /sys/kernel/debug/usb/devices  # 找到对应设备的BUS=01，则代表usbmon1设备
+# 截取设备数据,这里假设设备为usbmon1
+tcpdump -i usbmon1 -w ~/usb_log.pcap
+```
+
+4. 安装wireshark解析usb_log.pcap文件
+
+```shell
+# 安装wireshark
+sudo add-apt-repository ppa:wireshark-dev/stable
+sudo apt update
+sudo apt install wireshark          # 也可以直接安装，但可能不是最新版wireshark
+# 将当前用户添加到wireshark组
+sudo usermod -aG wireshark $(whoami)
+# 启动wireshark->文件->打开并找到usb_log.pcap文件
+```
