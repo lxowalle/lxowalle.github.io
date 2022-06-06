@@ -2,6 +2,8 @@
 
 参考[rust官方core文档](https://doc.rust-lang.org/core/)V1.61.0版
 
+参考[rust core文档](https://rust.ffactory.org/core/index.html)V1.60.0版
+
 ​	rust有两个基本库，core库和std库，其中std库依赖于core库，core库没有依赖，一般作为rust代码跨平台的基础库。所以嵌入式开发过程一般都会使用#![no_std]来屏蔽掉std库，而只是用core库开发。
 
 ​	core库分为原始类型、模块和宏。
@@ -39,7 +41,7 @@ array是数组类型，表示为[T; N]，其中T表示类型，N表示非负常�
 1. 对于元素数量为0~32的数组，如果元素类型允许，数据将会实现Default trait。
 2. 数组可以强制为slice，因此可以直接使用slice的方法
 
-使用方法：
+#### 使用方法
 
 1. 初始化、赋值、取值
 
@@ -96,7 +98,7 @@ array是数组类型，表示为[T; N]，其中T表示类型，N表示非负常�
    }
    ```
 
-函数：
+#### 函数
 
 1. map函数
 
@@ -141,7 +143,174 @@ array是数组类型，表示为[T; N]，其中T表示类型，N表示非负常�
 
 5. as_mut_slice函数
 
+   as_mut_slice函数将数组转换为包含整个数组的可变切片，等效于mut &s[..]
    
+6. each_ref函数
+
+   each_ref函数用来借用每个元素并返回大小相同的引用数组。注意返回的数组的每个成员都是原数组成员的引用。
+
+   ```rust
+   #![feature(array_methods)]
+   fn main() {
+       println!("Hello world!");
+       let floats = [3.1, 2.7, -1.0];
+       let float_refs: [&f64; 3] = floats.each_ref();
+       println!("{:?} {:?} {:?} {:?}", &floats as *const f64 as usize, 
+                           float_refs[0] as *const f64 as usize,
+                           float_refs[1] as *const f64 as usize,
+                           float_refs[2] as *const f64 as usize);
+       println!("{:?} {:?}", floats, float_refs);
+   }
+   ```
+
+7. mut_ref函数
+
+   each_ref函数用来借用每个元素并返回大小相同的可变引用数组。注意返回的数组的每个成员都是原数组成员的可变引用。
+
+8. split_array_ref函数
+
+   split_array_ref函数会在索引M的位置将数组分为[0, M)和[M, N)两部分，N表示数组最大长度。如果M>N将会触发panic。
+
+   split_array_ref函数通过元组返回两个新数组的引用。
+
+   ```rust
+   #![feature(split_array)]
+   fn main() {
+       let v = [1, 2, 3, 4, 5, 6];
+       {
+          let (left, right) = v.split_array_ref::<0>();
+          assert_eq!(left, &[]);
+          assert_eq!(right, &[1, 2, 3, 4, 5, 6]);
+       }
+       
+       {
+           let (left, right) = v.split_array_ref::<2>();
+           assert_eq!(left, &[1, 2]);
+           assert_eq!(right, &[3, 4, 5, 6]);
+           println!("array:{:?} left:{:?}  right:{:?}", 
+           &v as *const i32 as usize, 
+           left as *const i32 as usize,
+           &right[0] as *const i32 as usize);
+       }
+       
+       {
+           let (left, right) = v.split_array_ref::<6>();
+           assert_eq!(left, &[1, 2, 3, 4, 5, 6]);
+           assert_eq!(right, &[]);
+       }
+   }
+   ```
+
+9. split_array_mut函数
+
+   同split_array_ref函数，生成的两个数组引用为可变引用。
+
+10. rsplit_array_ref函数
+
+    rsplit_array_ref函数会在索引M的位置将数组分为[0, N-M)和[N-M, N)两部分，N表示数组最大长度。如果M>N将会触发panic。
+
+    split_array_ref函数通过元组返回两个新数组的引用。
+
+    ```rust
+    #![feature(split_array)]
+    fn main() {
+        let v = [1, 2, 3, 4, 5, 6];
+    
+        {
+           let (left, right) = v.rsplit_array_ref::<0>();
+           assert_eq!(left, &[1, 2, 3, 4, 5, 6]);
+           assert_eq!(right, &[]);
+        }
+        
+        {
+            let (left, right) = v.rsplit_array_ref::<2>();
+            assert_eq!(left, &[1, 2, 3, 4]);
+            assert_eq!(right, &[5, 6]);
+        }
+        
+        {
+            let (left, right) = v.rsplit_array_ref::<6>();
+            assert_eq!(left, &[]);
+            assert_eq!(right, &[1, 2, 3, 4, 5, 6]);
+        }
+    }
+    ```
+
+11. rssplit_array_mut函数
+
+    同rssplit_array_mut函数，生成的两个数组引用为可变引用。
+
+#### 已实现的Trait
+
+见手册
+
+### Bool
+
+bool表示布尔类型，只能是true或flase，转换整数为0和1
+
+#### 使用方法
+
+```rust
+let test = true;
+
+// using the `if` conditional
+if test {
+    println!("oh, yeah!");
+} else {
+    println!("what?!!");
+}
+
+// ... or, a match pattern
+match test {
+    true => println!("keep praising!"),
+    false => println!("you should praise!"),
+}
+```
+
+#### 函数
+
+1. then_some函数
+
+   then_some函数通过判断一个布尔类型，并返回Option类型
+
+   ```rust
+   fn main() {
+       assert_eq!(false.then_some(0), None);
+       assert_eq!(true.then_some(5), Some(5));
+   }
+   ```
+
+2. then函数
+
+   then函数通过判断一个布尔类型，如果为true则返回Some(f()),如果为false则返回None
+
+   ```rust
+   fn main() {
+       assert_eq!(false.then(|| 0), None);
+       assert_eq!(true.then(|| 5), Some(5));
+   }
+   ```
+
+### char
+
+char是字符类型，范围是Unicode除了代理代码点以外的代码点，包括[0,0x10FFFF]，UTF-16使用的代理代码点在0xD800到0xDFFF的范围。
+
+#### 使用方式
+
+1. 创建
+
+   ```rust
+   fn main() {
+       println!("{:?}", char::from_u32(0x61));
+       println!("{:?}", unsafe{char::from_u32_unchecked(0x61)});
+       let char = 'a';
+       println!("{:?}", char);
+   }
+   ```
+
+   
+
+
 
 ## 常用Trait
 
@@ -356,3 +525,45 @@ Borow trait通过定义borrow_mut函数来获取目标的可变借用，BorrowMu
 ### ToOwned
 
 ToOwned trait允许类型&U到T的转换。
+
+### Index和IndexMut
+
+Index和IndexMut分别通过实现index和index_mut方法来实现使用[]进行切片操作
+
+```rust
+#[derive(Debug)]
+struct Any<T> {
+    con: Vec<T>,
+}
+
+impl<T> std::ops::Index<usize> for Any<T> {
+    type Output = [T];
+    fn index(&self, index: usize) -> &[T] {
+        let start = index;
+        &self.con[start..start + 1]
+    }
+}
+
+impl<T> std::ops::IndexMut<usize> for Any<T> {
+    fn index_mut(&mut self, index: usize) -> &mut [T] {
+        let start = index * 1;
+        &mut self.con[start..start + 1]
+    }
+}
+
+fn main() {
+    let mut a = Any {con: vec!{1, 2, 3, 4, 5, 6} };
+    println!("a:{:?} a[0]:{:?}", a, &a[1]);
+    assert!(a[0] == [1]);
+    
+    let b = &mut a[1];
+    b[0] = 7;
+    println!("b:{:?}", b);
+    assert!(b == [7]);
+}
+```
+
+### Pattern
+
+Pattern trait定义了字符串搜索方法
+
