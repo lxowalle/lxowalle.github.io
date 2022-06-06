@@ -25,9 +25,123 @@
 2. 使用`Result<T, !>`可以表示该Result没有错误发生，使用`Result<!, T>`可以表示该Result必定有错误发生
 3. 对于非`!`类型的函数，如果使用`!`类型返回，则必须保证返回类型可以被自动推导出来，否则编译器不能确定`!`需要强制转换的正确类型。
 
+### array
 
+array是数组类型，表示为[T; N]，其中T表示类型，N表示非负常量。
 
+有两种创建数组的方式
 
+- 使用[x,y,z]的方式创建
+- 使用[x; N]的方式创建，但是值x必须定义了Copy 
+
+注意：
+
+1. 对于元素数量为0~32的数组，如果元素类型允许，数据将会实现Default trait。
+2. 数组可以强制为slice，因此可以直接使用slice的方法
+
+使用方法：
+
+1. 初始化、赋值、取值
+
+   ```rust
+   // 初始化
+   let mut array: [i32; 3] = [0; 3];
+   // 赋值
+   array[0] = 1;
+   array[1] = 2;
+   array[2] = 3;
+   // 取值
+   for i in array {
+   	println!("{}", array[i]);
+   }
+   
+   // 取值，注意这里的i是array每个元素的指针
+   println!("&array:{}", &array as *const i32 as usize);
+   for i in &array {
+       unsafe{println!("i:{} ptr_for_i:{}", i, i as *const i32 as usize);}
+   }
+   ```
+
+2. 切片模式取值
+
+   ```rust
+   // 切片模式取值1
+   let array: [i32; 5] = [1, 2, 3, 4, 5];
+   match array[1..4] {
+       [a, _] => println!("Error, too short"),
+       [a, b, c] => println!("Ok,a:{} b:{}, c:{}", a, b, c),
+       _  => println!("None"),
+   };
+   // 切片模式取值2
+   let [a, b, c] = [1, 2, 3];
+   println!("a:{}", a);
+   println!("b:{}", b);
+   println!("c:{}", c);
+   ```
+
+3. 迭代取值
+
+   ```rust
+   // 取引用迭代
+   let array: [i32; 5] = [1, 2, 3, 4, 5];
+   for item in array.iter().enumerate() {
+       let (i, val): (usize, &i32) = item;
+       println!("i:{} val:{}", i, val);
+   }
+   // 取值迭代
+   let array: [i32; 5] = [1, 2, 3, 4, 5];
+   for item in IntoIterator::into_iter(array).enumerate() {
+       let (i, val): (usize, i32) = item;
+       println!("i:{} val:{}", i, val);
+   }
+   ```
+
+函数：
+
+1. map函数
+
+   map函数用来从一个数组生成一个新的数组。map在大数组上优化不够好，因此需要避免在大数组中使用map
+
+   ```rust
+   // 将数组所有值加1并保存
+   let array: [i32; 5] = [1, 2, 3, 4, 5];
+   let tmp = 3;
+   let new_array = array.map(|v| {v + tmp});
+   println!("{:?}", new_array);
+   ```
+
+2. try_map函数
+
+   try_map函数功能类似map函数，从一个数组来生成一个新数组时会检查是否有Error并返回错误，错误类型可能是Result<[T;N];E>或Option<T>，由闭包的返回类型决定。
+
+   try_map函数可以
+
+   ```rust
+   #![feature(array_try_map)]
+   // 将数组内容从&str转换为u32并保存为一个新的array
+   let a = ["1", "2", "3"];
+   let b = a.try_map(|v| v.parse::<u32>()).unwrap().map(|v| v + 1);
+   println!("{:?}", b);
+   ```
+
+3. zip函数
+
+   zip函数会将两个数组的值合并为一个元组。
+
+   ```rust
+   let x = [1, 2, 3];
+   let y = [4, 5, 6];
+   let z = x.zip(y);
+   println!("{:?}", z);
+   ```
+
+4. as_slice函数
+
+   as_slice函数将数组转换为包含整个数组的切片，等效于&s[..]
+
+5. as_mut_slice函数
+
+   
 
 ## 常用Trait
 
@@ -36,6 +150,8 @@
 rust中实现了Clone Trait的类型可以进行深拷贝，但需要显示调用。Clone主要实现一个clone函数。
 
 ### Copy
+
+参考[这里](https://doc.rust-lang.org/core/marker/trait.Copy.html)
 
 rust中值传递过程默认隐式使用Move传递，意味着值传递时生命周期也一起传递，而实现了Copy trait后会默认隐式使用Copy传递，目标值将进行浅拷贝但不会有生命周期传递。
 
@@ -217,3 +333,26 @@ impl PartialEq for Person {
 
 ```
 
+### IntoIterator
+
+IntoIterator trait通过定义into_iter函数来定义如何转换为迭代器。
+
+### AsRef
+
+AsRef trait通过定义as_ref函数来获取目标的引用。
+
+### AsMut
+
+AsMut trait通过定义as_mut函数来获取目标的可变引用
+
+### Borrow
+
+Borrow tarit通过定义borrow函数来获取目标的借用，Borrow和AsRef相比很相似但更加严格，如果类型U实现了Borrow<T>，在为U实现额外的trait(特别是实现Eq, Ord, Hash)的时候应该实现与T相同的行为。
+
+### BorrowMut
+
+Borow trait通过定义borrow_mut函数来获取目标的可变借用，BorrowMut依赖于Borrow。
+
+### ToOwned
+
+ToOwned trait允许类型&U到T的转换。
