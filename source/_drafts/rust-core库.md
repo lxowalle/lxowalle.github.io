@@ -400,6 +400,42 @@ char是字符类型，范围是Unicode除了代理代码点以外的代码点，
 1. 函数默认ABI为"Rust"，即`Fn()`类型与`extern "Rust" fn()`相同。也可以使用C ABI，需要写为`extern "C" fn()`
 2. 函数的名字已经通过Fn定义时，该名字作为表达式时会变成一个长度为0的唯一标识，并且可以将标识转换为函数指针类型。
 
+#### i8
+
+​	i8是有符号的1字节整数。
+
+#### 函数
+
+1. 常用
+
+   ```rust
+   
+   fn main() {
+       assert_eq!(i8::MAX, 127);                               // i8最大值
+       assert_eq!(i8::MIN, -128);                              // i8最小值
+       assert_eq!(i8::from_str_radix("1", 10).unwrap(), 1);    // 字符串转i8,基数为10
+       assert_eq!(i8::from_str_radix("A", 16).unwrap(), 10);   // 字符串转i8,基数为16
+       assert_eq!(i8::count_ones(0b00011001), 3);              // 返回bit为1的个数
+       assert_eq!(i8::count_zeros(0b00011001), 5);             // 返回bit为0的个数
+       assert_eq!(i8::leading_ones(-1i8), 8);                  // 返回前导1的个数
+       assert_eq!(i8::leading_zeros(-1i8), 0);                 // 返回前导0的个数
+       assert_eq!(i8::trailing_ones(-1i8), 8);                 // 返回后导1的个数
+       assert_eq!(i8::trailing_zeros(-1i8), 0);                // 返回后导0的个数
+       assert_eq!(i8::rotate_left(0b1000, 5), 0b0001);         // 循环左移n位，溢出值放到末尾
+       assert_eq!(i8::rotate_right(0b10000, 6), 0b01000000);   // 循环右移n位，溢出值放到开头
+       assert_eq!(i8::swap_bytes(-2i8), -2i8);                 // 交换数值
+       assert_eq!(i8::reverse_bits(0b0010), 0b01000000);       // 大小端格式翻转
+       assert_eq!(i8::from_le(1), 1);                          // 从小端格式转换
+       assert_eq!(i8::from_be(1), 1);                          // 从大端格式转换
+       assert_eq!(i8::to_le(1), 1);                            // 从转换为小端格式
+       assert_eq!(i8::to_be(1), 1);                            // 从转换为大端格式   
+   }
+   ```
+
+   
+
+
+
 #### 使用方法：
 
 1. 强制转换普通函数，或者使用闭包
