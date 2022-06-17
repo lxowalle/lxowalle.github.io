@@ -3216,3 +3216,57 @@ sudo apt install wireshark          # 也可以直接安装，但可能不是最
 sudo usermod -aG wireshark $(whoami)
 # 启动wireshark->文件->打开并找到usb_log.pcap文件
 ```
+
+
+#### 5点关键点计算欧拉角
+
+注：
+pitch 俯仰角 绕x轴旋转
+yaw 偏航角 绕y轴旋转
+roll 摆动角 绕z轴旋转
+
+```c
+static float get_roll(int l_eye_x, int l_eye_y, int r_eye_x, int r_eye_y) {
+    float a = r_eye_x - l_eye_x;
+    float b = r_eye_y - l_eye_y;
+
+    if (fabs(a) < 0.0000001f)   return 0.f;
+    else {
+        float res = atanf(1 - a / b) * 180.0f / 3.1415926;
+        return res >= 0 ? res - 90 : res + 90;        
+    }
+}
+
+static float get_yaw(int nose_x, int face_x, int face_w) {
+    float a = nose_x - face_x;
+    float b = a / (face_w >> 1) - 1;
+    return asinf(b) * 180 / 3.1415926;
+}
+
+static float get_pitch(int nose_y, int face_y, int face_h)
+{
+	float a = nose_y - face_y;
+	float b = a / (face_h * 0.6f) - 1;
+	return asinf(b) * 180 / 3.1415926;
+}
+```
+
+#### rustup命令
+
+命令	描述
+rustup default nightly	将默认的工具链设置为最新的日更版。
+rustup set profile minimal	设置默认的 "profile"（见 profiles）。
+rustup target list	列出活动工具链的所有可用目标
+rustup target add arm-linux-androideabi	安装Android目标
+rustup target remove arm-linux-androideabi	删除Android目标
+rustup run nightly rustc foo.rs	无论活动的工具链如何，都要运行日更版运行。
+rustc +nightly foo.rs	运行日更版编译器的速记方法
+rustup run nightly bash	运行为日更版编译器配置的外壳
+rustup default stable-msvc	在 Windows 上，使用 MSVC 工具链而不是 GNU。
+rustup override set nightly-2015-04-01	对于当前目录，使用特定日期的日更版编译器
+rustup toolchain link my-toolchain "C:\RustInstallation"	通过符号链接现有的安装程序来安装一个自定义的工具链。
+rustup show	显示当前目录下将使用的工具链
+rustup toolchain uninstall nightly	卸载一个指定的工具链
+rustup toolchain help	显示一个子命令（如toolchain）的帮助页面
+rustup man cargo	(仅适用于Unix) 查看指定命令（如cargo）的手册页面
+配置文件
