@@ -3270,3 +3270,14 @@ rustup toolchain uninstall nightly	卸载一个指定的工具链
 rustup toolchain help	显示一个子命令（如toolchain）的帮助页面
 rustup man cargo	(仅适用于Unix) 查看指定命令（如cargo）的手册页面
 配置文件
+
+
+### openssl加解密
+
+```shell
+# 加密
+openssl enc -e -aes-128-cbc -in input.bin -out encrypt.bin -K 112233445566778899AABBCCDDEEFF00 -iv 112233445566778899AABBCC00000000 -p -nosalt
+
+# 解密
+openssl aes-128-cbc -d -in encrypt.bin -out decode.bin -K 112233445566778899AABBCCDDEEFF00 -iv 112233445566778899AABBCC00000000 -p -nosalt
+```
