@@ -3281,3 +3281,39 @@ openssl enc -e -aes-128-cbc -in input.bin -out encrypt.bin -K 112233445566778899
 # 解密
 openssl aes-128-cbc -d -in encrypt.bin -out decode.bin -K 112233445566778899AABBCCDDEEFF00 -iv 112233445566778899AABBCC00000000 -p -nosalt
 ```
+
+### uvc摄像头
+
+使用lsusb检查uvc摄像头
+```shell
+lsusb -d ffff:ffff -v | grep "14 Video"     # lsusb -d pid:vid -v | grep "14 Video" 
+```
+
+使用v4l-utils检查uvc摄像头
+```shell
+sudo apt install v4l-utils
+v4l2-ctl --list-devices
+v4l2-ctl -d /dev/video0 --list-formats
+```
+
+使用python-cv2显示摄像头数据
+```python
+import cv2
+
+cap = cv2.VideoCapture(0)
+cap.set(3,640)#宽
+cap.set(4,480)#高
+
+while True:
+    # 一帧一帧的获取图像
+    ret,frame = cap.read()
+    if ret == True:
+        frame = cv2.flip(frame, 1)
+    # 显示结果帧
+    cv2.imshow("frame", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+# 释放摄像头资源
+cap.release()
+cv2.destroyAllWindows()
+```
