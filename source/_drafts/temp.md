@@ -3317,3 +3317,10 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 ```
+
+#### ubuntu 上微信不能压缩图片
+
+需要安装微信支持的压缩库
+```shell
+sudo apt-get install libjpeg62:i386
+```
