@@ -263,3 +263,15 @@ Tips:
 [Hexo博客之butterfly主题优雅魔改系列](https://blog.csdn.net/u012208219/article/details/106883001/?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.no_search_link&spm=1001.2101.3001.4242.0)
 
 [Butterfly](https://butterfly.js.org)
+
+#### hexo创建草稿
+
+```shell
+hexo new draft <title>
+```
+
+将草稿发布为正式文章,其中 `<filename>` 为不包含 md 后缀的文章名称。它的原理只是将文章从 source/_drafts 移动到 source/_posts 而已。
+
+```shell
+hexo P <filename>
+```

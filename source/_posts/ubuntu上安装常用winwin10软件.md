@@ -40,6 +40,16 @@ export QT_IM_MODULE="fcitx"
 export XMODIFIERS="@im=fcitx"
 ```
 
+#### ubuntu 上微信不能压缩图片的问题
+
+需要安装微信支持的压缩库
+```shell
+sudo apt-get install libjpeg62:i386
+```
+
+#### 解决微信输入汉字是方块的问题
+https://github.com/wszqkzqk/deepin-wine-ubuntu/issues/136
+
 ##### 20220428更新
 
 参考[这里](https://github.com/lovechoudoufu/wechat_for_linux)的步骤也可以使用微信
