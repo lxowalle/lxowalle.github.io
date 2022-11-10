@@ -1,3 +1,9 @@
+---
+title: rust命令记录
+date: 2021-10-13 14:31:44
+tags:
+---
+
 # rust命令记录
 
 #### rustup命令

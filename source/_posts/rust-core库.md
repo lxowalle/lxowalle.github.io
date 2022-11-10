@@ -1,3 +1,9 @@
+---
+title: rust-core库
+date: 2021-10-13 14:31:44
+tags:
+---
+
 # rust-core库
 
 参考[rust官方core文档](https://doc.rust-lang.org/core/)V1.61.0版

@@ -1,3 +1,9 @@
+---
+title: rust-serde库
+date: 2021-10-13 14:31:44
+tags:
+---
+
 # Rust序列化/反序列化框架
 
 [Rust 序列化反序列框架 Serde](https://www.rectcircle.cn/posts/rust-serde/)

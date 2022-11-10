@@ -1,3 +1,8 @@
+---
+title: 搭建gitlab记录
+tags:
+---
+
 # 搭建gitlab
 
 #### 搭建gitlab
