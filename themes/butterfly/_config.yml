@@ -130,20 +130,21 @@ cover:
   # left/right/both
   position: both
   # When cover is not set, the default cover is displayed (當沒有設置cover時，默認的封面顯示)
-  default_cover:
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054472.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054442.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054599.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054488.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054150.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054426.jpeg
-    - https://gitee.com/liuxo/images/raw/master/blog/202110252054284.jpg
-    - https://gitee.com/liuxo/images/raw/master/blog/34.png
+  default_cover: 
+    - https://tva1.sinaimg.cn/large/832afe33ly1gbhxplql40j22801e0q3c.jpg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054472.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054442.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054599.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054488.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054896.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054150.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252051306.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252051600.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054426.jpeg
+    # - https://gitee.com/liuxo/images/raw/master/blog/202110252054284.jpg
+    # - https://gitee.com/liuxo/images/raw/master/blog/34.png
 
 # Replace Broken Images (替換無法顯示的圖片)
 error_img:
