@@ -132,6 +132,7 @@ cover:
   # When cover is not set, the default cover is displayed (當沒有設置cover時，默認的封面顯示)
   default_cover: 
     - https://tva1.sinaimg.cn/large/832afe33ly1gbhxplql40j22801e0q3c.jpg
+    - https://s2.loli.net/2022/11/15/3KYHpJmkyXNFecr.jpg
     # - https://gitee.com/liuxo/images/raw/master/blog/202110252054306.jpeg
     # - https://gitee.com/liuxo/images/raw/master/blog/202110252054472.jpeg
     # - https://gitee.com/liuxo/images/raw/master/blog/202110252054853.png
