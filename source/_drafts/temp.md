@@ -2270,3 +2270,21 @@ sudo apt-get install bridge-utils	# 用来配置网桥的工具
 git clone https://git.savannah.nongnu.org/git/lwip.git
 ```
 
+
+#### 解决zellij不能复制粘贴的问题
+
+这个问题官网上有解释，是因为zellij只能在支持osc52信号的环境使用复制粘贴功能。
+可以选择使用Alacritty来作为终端，并且注意粘贴的地方也需要支持osc52信号
+
+如何将alacritty设置为默认终端？
+
+```shell
+# 查看alacritty的执行文件路径
+whereis alacritty
+# 将alacritty创建终端符号链接
+sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /home/sipeed/.cargo/bin/alacritty 1
+# 选择要使用的默认终端编号
+sudo update-alternatives --config x-terminal-emulator
+# 删除终端符号
+sudo update-alternatives --remove x-terminal-emulator /home/sipeed/.cargo/bin/alacritty
+```
