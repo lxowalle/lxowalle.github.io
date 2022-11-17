@@ -81,3 +81,24 @@ squash aaaa             # squash表示这个commit会被合并到前一个commit
 #注意：如果出现操作错误，执行git rebase --abort回到合并前的状态
 
 ```
+
+#### git删除历史文件
+
+参考自[Git如何永久删除文件(包括历史记录)](https://www.cnblogs.com/shines77/p/3460274.html)
+
+```shell
+# 1. 从本地仓库清除文件,在{path-to-your-remove-file}替换为需要删除的文件
+git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch {path-to-your-remove-file}' --prune-empty --tag-name-filter cat -- --all
+
+# 2. 更新远程仓库
+git push origin master --force --all
+
+# 3. （如果打了标签）删除tag版本中的提交
+git push origin master --force --tags
+
+# 4. 清理残余的垃圾文件
+rm -rf .git/refs/original/
+git reflog expire --expire=now --all
+git gc --prune=now
+git gc --aggressive --prune=now
+```
