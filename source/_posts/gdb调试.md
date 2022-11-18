@@ -28,6 +28,7 @@ p $pc               显示pc的值
 x/10i $pc           查看pc指向的地址后10行的汇编代码
 display /i $pc      每次执行命令后，显示下一条汇编命令
 undisplay <id>      取消display的显示
+call <函数名>        跳转到目标函数的位置
 q                   退出gdb
 ```
 

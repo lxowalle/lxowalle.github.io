@@ -8,7 +8,11 @@ tags:
 
 **内容出自[这里](https://docs.oracle.com/cd/E38902_01/html/E38861/chapter6-46512.html#scrolltoc)，移出来是为了方便查阅。**
 
+读ELF文件的所有符号
 
+```shell
+objdump -t xxx.elf
+```
 
 
 ## 目标文件格式

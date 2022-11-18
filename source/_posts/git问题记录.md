@@ -78,8 +78,9 @@ squash aaaa             # squash表示这个commit会被合并到前一个commit
 #步骤3,修改合并后的message
 #步骤4，完成
 
-#注意：如果出现操作错误，执行git rebase --abort回到合并前的状态
-
+#注意：
+# git rebase --abort 如果出现操作错误，执行这个指令回到合并前的状态
+# git rebase --continue 如果出现冲突并解决后，执行这个指令继续合并分支
 ```
 
 #### git删除历史文件
