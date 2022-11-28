@@ -1,5 +1,5 @@
 ---
-title: ubuntu上安装常用winwin10软件
+title: ubuntu上安装常用win10软件
 date: 2021-10-19 19:38:28
 tags:
 ---
