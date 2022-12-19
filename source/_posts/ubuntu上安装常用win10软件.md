@@ -65,3 +65,18 @@ sudo dpkg -i weixin_2.1.1_amd64.deb
 ./weixin
 ```
 
+#### 解决微信启动错误`wine: could not load kernel32.dll, status c0000135`
+
+[参考](https://github.com/zq1997/deepin-wine/issues/310)
+
+解决方法：
+
+```shell
+# 1. 打开启动脚本
+sudo vim /opt/apps/com.qq.weixin.deepin/files/run.sh
+
+# 2. 注释设置WINEPREDLL环境变量的一行
+# export WINEPREDLL="$ARCHIVE_FILE_DIR/dlls"
+
+# 3. 重新启动微信
+```
