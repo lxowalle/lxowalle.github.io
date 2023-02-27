@@ -25,7 +25,7 @@ tags:
 
 3. 运行lv_font_conv
 
-    参考[将LVGL的中文字体编译为文件写入Flash中并读取](https://yuanze.wang/posts/lvgl-chinese-font-in-bin/)
+    参考[将LVGL的中文字体编译为文件写入Flash中并读取](https://yuanze.wang/posts/lvgl-chinese-font-in-bin/), 下载字体[字体天下](https://www.fonts.net.cn/fonts-zh-1.html)
 
     ```shell
     lv_font_conv --bpp 4 --size 19 -o sh_19.c --font FangZhengHeiTiJianTi-1.ttf --format lvgl --no-kerning --no-prefilter --range 0x20-0xBF --range 0x3000-0x3011 --range 0x4E00-0x9FAF --range 0xFF00-0xFF64
