@@ -48,13 +48,16 @@ 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
     os.environ["HTTP_PROXY"] = "127.0.0.1:7890"
     os.environ["HTTPS_PROXY"] = "127.0.0.1:7890"
     
-    openai.api_key = "sk-EzEv2UuSUn203z2bsg7vT3BlefvdZp29okjn5Kzf3lEYkVnJ"  # 你的 OpenAI API Key
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+    if not openai.api_key:
+        print("Please set your OPENAI_API_KEY environment variable.")
+        sys.exit(1)
     
     def ask_gpt(prompt, model, temperature=0.5, max_tokens=100):
         response = openai.ChatCompletion.create(
             model=model,
             messages = [
-                {'role': 'system', 'content': '回答的结果以中文英文输出'},
+                {'role': 'system', 'content': '你会将回答结果按中英文混合的格式输出'},
                 {'role': 'user', 'content': prompt}
             ],
             max_tokens=max_tokens,
@@ -72,12 +75,10 @@ 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
     signal.signal(signal.SIGINT, exit_handler)
     
     while True:
-        prompt = input("You: ")
+        prompt = input("> ")
         if prompt:
             print("...")
             response = ask_gpt(prompt, "gpt-3.5-turbo")
-            print("ChatGPT: " + response)
-    
+            print(response)
     ```
-
     
