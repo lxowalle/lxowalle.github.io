@@ -48,10 +48,9 @@ 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
     os.environ["HTTP_PROXY"] = "127.0.0.1:7890"
     os.environ["HTTPS_PROXY"] = "127.0.0.1:7890"
     
-    openai.api_key = os.getenv('OPENAI_API_KEY')
-    if not openai.api_key:
-        print("Please set your OPENAI_API_KEY environment variable.")
-        sys.exit(1)
+    def exit_handler(signum, frame):
+        print("\r\n")
+        sys.exit(0)
     
     def ask_gpt(prompt, model, temperature=0.5, max_tokens=100):
         response = openai.ChatCompletion.create(
@@ -68,17 +67,36 @@ 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
     
         return response['choices'][0]['message']['content']
     
-    def exit_handler(signum, frame):
-        print("\r\n")
-        sys.exit(0)
+    class ChatGPT:
+        def __init__(self):
+            signal.signal(signal.SIGINT, exit_handler)
+            openai.api_key = os.getenv('OPENAI_API_KEY')
+            if not openai.api_key:
+                print("Please set your OPENAI_API_KEY environment variable.")
+                sys.exit(1)
+            self.messages = [{"role": "system", "content": "能够把回答同时翻译成中文和英文"}]
     
-    signal.signal(signal.SIGINT, exit_handler)
+        def ask_gpt(self):
+            response = openai.ChatCompletion.create(
+                model='gpt-3.5-turbo',
+                messages = self.messages,
+                max_tokens=1024,
+                temperature=0.5,
+                n = 1,
+                stop=None
+            )
+            return response['choices'][0]['message']['content']
+        
+    def main():
+        chat = ChatGPT()
+        while True:
+            prompt = input("> ")
+            if prompt:
+                print("...")
+                chat.messages.append({"role": "user", "content": prompt})
+                response = chat.ask_gpt()
+                print(response)
     
-    while True:
-        prompt = input("> ")
-        if prompt:
-            print("...")
-            response = ask_gpt(prompt, "gpt-3.5-turbo")
-            print(response)
+    if __name__ == "__main__":
+        main()
     ```
-    
