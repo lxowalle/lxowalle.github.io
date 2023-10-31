@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://lxowalle.github.io</id>
+    <title>lxowalle</title>
+    <updated>2023-10-31T06:05:00.314Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://lxowalle.github.io"/>
+    <link rel="self" href="https://lxowalle.github.io/atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://lxowalle.github.io/images/avatar.png</logo>
+    <icon>https://lxowalle.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, lxowalle</rights>
+    <entry>
+        <title type="html"><![CDATA[Linux使用v4l2框架捕获摄像头]]></title>
+        <id>https://lxowalle.github.io/8QXF7qTHf/</id>
+        <link href="https://lxowalle.github.io/8QXF7qTHf/">
+        </link>
+        <updated>2023-10-12T03:57:03.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[全志v853s常规-调试wifi驱动]]></title>
+        <id>https://lxowalle.github.io/8kswvF7mS/</id>
+        <link href="https://lxowalle.github.io/8kswvF7mS/">
+        </link>
+        <updated>2023-10-09T07:55:31.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[全志v853s常规-调试camera驱动]]></title>
+        <id>https://lxowalle.github.io/5xIOiDM1K/</id>
+        <link href="https://lxowalle.github.io/5xIOiDM1K/">
+        </link>
+        <updated>2023-10-09T02:04:21.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[全志v853s常规-Tina Linux SDK基本应用]]></title>
+        <id>https://lxowalle.github.io/kwW10gEwW/</id>
+        <link href="https://lxowalle.github.io/kwW10gEwW/">
+        </link>
+        <updated>2023-10-08T05:41:48.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[全志v853s常规-开发e907内核]]></title>
+        <id>https://lxowalle.github.io/quan-zhi-v853s-chang-gui-kai-fa-e907-nei-he-1/</id>
+        <link href="https://lxowalle.github.io/quan-zhi-v853s-chang-gui-kai-fa-e907-nei-he-1/">
+        </link>
+        <updated>2023-10-07T10:12:28.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[WSL无法执行32位程序的情况]]></title>
+        <id>https://lxowalle.github.io/wsl-wu-fa-zhi-xing-32-wei-cheng-xu-de-qing-kuang/</id>
+        <link href="https://lxowalle.github.io/wsl-wu-fa-zhi-xing-32-wei-cheng-xu-de-qing-kuang/">
+        </link>
+        <updated>2023-10-07T09:54:18.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[ubuntu上安装常用win10软件]]></title>
+        <id>https://lxowalle.github.io/ubuntu-shang-an-zhuang-chang-yong-win10-ruan-jian/</id>
+        <link href="https://lxowalle.github.io/ubuntu-shang-an-zhuang-chang-yong-win10-ruan-jian/">
+        </link>
+        <updated>2023-10-07T09:53:54.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[rust-serde库]]></title>
+        <id>https://lxowalle.github.io/rust-serde-ku/</id>
+        <link href="https://lxowalle.github.io/rust-serde-ku/">
+        </link>
+        <updated>2023-10-07T09:53:14.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[rust-core库]]></title>
+        <id>https://lxowalle.github.io/rust-core-ku/</id>
+        <link href="https://lxowalle.github.io/rust-core-ku/">
+        </link>
+        <updated>2023-10-07T09:52:42.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[LVGL生成和更换字体]]></title>
+        <id>https://lxowalle.github.io/lvgl-sheng-cheng-he-geng-huan-zi-ti/</id>
+        <link href="https://lxowalle.github.io/lvgl-sheng-cheng-he-geng-huan-zi-ti/">
+        </link>
+        <updated>2023-10-07T09:52:03.000Z</updated>
+    </entry>
+</feed>
